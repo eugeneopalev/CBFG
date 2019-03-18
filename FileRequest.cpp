@@ -3,7 +3,7 @@
 extern HINSTANCE G_Inst;
 extern HWND hMain;
 
-BOOL GetSourceName(char *fname, char *title, char *filter, char *DefExt)
+BOOL GetSourceName(char *fname, const char *title, const char *filter, const char *DefExt)
 {
 	BOOL res;
 	OPENFILENAME fileopeninfo;
@@ -31,7 +31,7 @@ BOOL GetSourceName(char *fname, char *title, char *filter, char *DefExt)
 	return res;
 }
 
-BOOL GetTargetName(char *fname, char *Title, char *filter, char *DefExt)
+BOOL GetTargetName(char *fname, const char *Title, const char *filter, const char *DefExt)
 {
 	BOOL res;
 	OPENFILENAME fileopeninfo;

@@ -33,8 +33,8 @@ public:
 	bool CalcWidths(HDC);
 	HBITMAP *DrawFontMap(int Flags, int Sel);
 
-	int  LoadConfig(char *fname);
-	bool SaveConfig(char *fname, bool Grid, bool Width);
+	int  LoadConfig(const char *fname);
+	bool SaveConfig(const char *fname, bool Grid, bool Width);
 	void ResetOffsets();
 
 	bool SaveFont(int Format, char *fname, int Flags = 0);

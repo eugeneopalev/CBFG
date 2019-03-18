@@ -646,7 +646,7 @@ HBITMAP *BFontMap::DrawFontMap(int Flags, int Sel)
 	return fDIB;
 }
 
-int BFontMap::LoadConfig(char *fname)
+int BFontMap::LoadConfig(const char *fname)
 {
 	ifstream cfgfile;
 	long fSize;
@@ -706,7 +706,7 @@ int BFontMap::LoadConfig(char *fname)
 	return Flags;
 }
 
-bool BFontMap::SaveConfig(char *fname, bool Grid, bool Width)
+bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 {
 	ofstream cfgfile;
 	int tVal, Flags = 0;

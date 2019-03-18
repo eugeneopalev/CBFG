@@ -61,7 +61,7 @@ void SBM_Image::Reset()
 // Get file into memory, find extension and call relevant loader
 int SBM_Image::Load(char *filename)
 {
-	bool MyStrCmp(char *Str1, char *Str2);
+	bool MyStrCmp(const char *Str1, const char *Str2);
 
 	ifstream In;
 	char *StrPtr;
@@ -148,7 +148,7 @@ int SBM_Image::Load(char *filename)
 	return SBM_OK;
 }
 
-bool MyStrCmp(char *Str1, char *Str2) // Case insenstive string comparison
+bool MyStrCmp(const char *Str1, const char *Str2) // Case insenstive string comparison
 {
 	while ((*Str1 > 96 ? *Str1 - 32 : *Str1) == (*Str2 > 96 ? *Str2 - 32 : *Str2))
 	{
