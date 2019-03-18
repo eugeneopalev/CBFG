@@ -50,31 +50,31 @@
 #define SAVE_INV_ALPHA 0x200
 
 typedef struct
- {
-  unsigned char Red,Green,Blue;
- }BFG_RGB;
+{
+	unsigned char Red, Green, Blue;
+} BFG_RGB;
 
 typedef struct
- {
-  int hScr,vScr;
-  bool Grid,wMarker,ModAll,vScroll,hScroll;
-  float Zoom;
-  int Select,MaxChars;
- }AppInfo;
+{
+	int hScr, vScr;
+	bool Grid, wMarker, ModAll, vScroll, hScroll;
+	float Zoom;
+	int Select, MaxChars;
+} AppInfo;
 
 typedef struct
- {
-  unsigned char ID1,ID2;
-  int ImageWidth,ImageHeight,CellWidth,CellHeight;
-  unsigned char BPP,StartPoint;
- }FontFileHeader;
+{
+	unsigned char ID1, ID2;
+	int ImageWidth, ImageHeight, CellWidth, CellHeight;
+	unsigned char BPP, StartPoint;
+} FontFileHeader;
 
 typedef struct
- {
-  char ID[7];
-  int ImgWidth,ImgHeight,CellWidth,CellHeight,FontHeight,FontWidth;
-  BFG_RGB BackCol,ForeCol,GridCol,WidthCol,SelCol;
-  int Flags;
- }AppConfig;
+{
+	char ID[7];
+	int ImgWidth, ImgHeight, CellWidth, CellHeight, FontHeight, FontWidth;
+	BFG_RGB BackCol, ForeCol, GridCol, WidthCol, SelCol;
+	int Flags;
+} AppConfig;
 
 #endif

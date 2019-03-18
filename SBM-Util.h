@@ -30,63 +30,62 @@
 using namespace std;
 
 class SBM_Image
- {
-  public:
-   SBM_Image();
-   ~SBM_Image();
-   int Create(int width, int height, int bpp);
-   void Reset();                  // Clear Image
-   int Load(char* filename);      // Load BMP,PCX,TGA or SBM image
-   int GetBPP();
-   int GetWidth();
-   int GetHeight();
-   unsigned char* GetImg();       // Return a pointer to image data
-   unsigned char* GetPalette();   // Return a pointer to VGA palette
+{
+public:
+	SBM_Image();
+	~SBM_Image();
+	int Create(int width, int height, int bpp);
+	void Reset();                  // Clear Image
+	int Load(char *filename);      // Load BMP,PCX,TGA or SBM image
+	int GetBPP();
+	int GetWidth();
+	int GetHeight();
+	unsigned char *GetImg();       // Return a pointer to image data
+	unsigned char *GetPalette();   // Return a pointer to VGA palette
 
-   // Utility Functions
-   void FlipImg();   // Invert image vertically
-   int InsertAlpha(unsigned char *Alpha); // Adds an alpha channel to image
-   int Grayscale();  // Converts image to 8 bit gray
-   int InvertCol();  // Inverts colour values
-   void BGRtoRGB();  // Convert between RGB and BGR formats
+	// Utility Functions
+	void FlipImg();   // Invert image vertically
+	int InsertAlpha(unsigned char *Alpha); // Adds an alpha channel to image
+	int Grayscale();  // Converts image to 8 bit gray
+	int InvertCol();  // Inverts colour values
+	void BGRtoRGB();  // Convert between RGB and BGR formats
 
-   // Sets all non-KeyCol pixels to SatCol
-   int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
-                unsigned char SatR, unsigned char SatG, unsigned char SatB);   
-                     
+	// Sets all non-KeyCol pixels to SatCol
+	int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
+	             unsigned char SatR, unsigned char SatG, unsigned char SatB);
 
-   int SaveBMP(char *filename);
-   int SavePCX(char *filename);
-   int SaveTGA(char *filename);
-   int SaveRaw(char *filename);
+	int SaveBMP(char *filename);
+	int SavePCX(char *filename);
+	int SaveTGA(char *filename);
+	int SaveRaw(char *filename);
 
-  private:
-   short Width,Height;
-   char BPP,Encode,Planes;
-   unsigned long FileSize,ImageSize,Offset;
-   unsigned char *ImgData,*PalData,*FileData;
-   short BPL;
+private:
+	short Width, Height;
+	char BPP, Encode, Planes;
+	unsigned long FileSize, ImageSize, Offset;
+	unsigned char *ImgData, *PalData, *FileData;
+	short BPL;
 
-   int LoadBMP();
-   int ReadBMPHeader();
-   int LoadBMPRawData();
-   int LoadBMPRLE8Data();
-   int LoadBMPPalette();
+	int LoadBMP();
+	int ReadBMPHeader();
+	int LoadBMPRawData();
+	int LoadBMPRLE8Data();
+	int LoadBMPPalette();
 
-   int LoadPCX();
-   int ReadPCXHeader();
-   int LoadPCXRLEData();
-   int LoadPCXPalette();
-   
-   int LoadTGA();
-   int ReadTGAHeader();
-   int LoadTGARawData();
-   int LoadTGARLEData();
-   int LoadTGAPalette();
+	int LoadPCX();
+	int ReadPCXHeader();
+	int LoadPCXRLEData();
+	int LoadPCXPalette();
 
-   int LoadSBM();
+	int LoadTGA();
+	int ReadTGAHeader();
+	int LoadTGARawData();
+	int LoadTGARLEData();
+	int LoadTGAPalette();
 
-   void FreeMem(void **Ptr); // Safe delete []
- };
+	int LoadSBM();
+
+	void FreeMem(void **Ptr); // Safe delete []
+};
 
 #endif
