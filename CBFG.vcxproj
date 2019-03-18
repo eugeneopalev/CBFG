@@ -169,8 +169,8 @@
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\LICENCE" />
-    <None Include="..\README.md" />
+    <None Include="LICENCE" />
+    <None Include="README.md" />
     <None Include="BFG2.bmp" />
     <None Include="ico_up.ico" />
     <None Include="ico_down.ico" />
