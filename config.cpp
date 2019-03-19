@@ -1,15 +1,35 @@
-void SetConfigRGB(HWND Win, BFG_RGB Cols);
+#include "pch.h"
+#include "defs.h"
+#include "font.h"
+
+extern HINSTANCE G_Inst;
+extern HWND hMain;
+extern BFontMap *Fnt;
+extern AppInfo *info;
+
+void SetConfigRGB(HWND Win, BFG_RGB Cols)
+{
+	char Text[256];
+	wsprintf(Text, "%d", Cols.Red);
+	SendDlgItemMessage(Win, TXT_RED, WM_SETTEXT, 0, (LPARAM)Text);
+	SendDlgItemMessage(Win, SLD_RED, TBM_SETPOS, TRUE, (LPARAM)Cols.Red);
+	wsprintf(Text, "%d", Cols.Green);
+	SendDlgItemMessage(Win, TXT_GREEN, WM_SETTEXT, 0, (LPARAM)Text);
+	SendDlgItemMessage(Win, SLD_GREEN, TBM_SETPOS, TRUE, (LPARAM)Cols.Green);
+	wsprintf(Text, "%d", Cols.Blue);
+	SendDlgItemMessage(Win, TXT_BLUE, WM_SETTEXT, 0, (LPARAM)Text);
+	SendDlgItemMessage(Win, SLD_BLUE, TBM_SETPOS, TRUE, (LPARAM)Cols.Blue);
+	InvalidateRect(GetDlgItem(Win, ODR_COLOR), NULL, FALSE);
+}
 
 BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HDC dc;
 	RECT rcArea;
 	HBRUSH hBr;
-	BFG_RGB Col;
 	int Sel, Val, Red, Green, Blue;
 	char Text[256];
 	static AppConfig lCfg;
-	extern AppInfo *info;
 
 	switch (msg)
 	{
@@ -19,7 +39,9 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		lCfg.CellWidth = Fnt->GetSize(CELLWIDTH);
 		lCfg.FontHeight = Fnt->GetFontHeight();
 		lCfg.FontWidth = Fnt->GetFontWidth();
-		lCfg.ImgSize = Fnt->GetSize(MAPWIDTH);
+		lCfg.ImgWidth = Fnt->GetSize(MAPWIDTH);
+		lCfg.ImgHeight = Fnt->GetSize(MAPHEIGHT);
+		lCfg.Flags = 0;
 		if (info->Grid)
 		{
 			lCfg.Flags |= SHOW_GRID;
@@ -50,26 +72,99 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		// Set initial slider pos
 		SetConfigRGB(hDlg, lCfg.GridCol);
 
-		// Populate image size combo
-		SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_ADDSTRING, 0, (LPARAM)"64x64");
-		SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_ADDSTRING, 0, (LPARAM)"128x128");
-		SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_ADDSTRING, 0, (LPARAM)"256x256");
-		SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_ADDSTRING, 0, (LPARAM)"512x512");
-		if (lCfg.ImgSize == 128)
+		// Populate image size combos
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"16");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"32");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"64");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"128");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"256");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"512");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"1024");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"2048");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_ADDSTRING, 0, (LPARAM)"4096");
+
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"16");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"32");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"64");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"128");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"256");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"512");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"1024");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"2048");
+		SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_ADDSTRING, 0, (LPARAM)"4096");
+
+		if (lCfg.ImgWidth == 32)
 		{
-			SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_SETCURSEL, 1, 0);
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 1, 0);
 		}
-		else if (lCfg.ImgSize == 256)
+		else if (lCfg.ImgWidth == 64)
 		{
-			SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_SETCURSEL, 2, 0);
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 2, 0);
 		}
-		else if (lCfg.ImgSize == 512)
+		else if (lCfg.ImgWidth == 128)
 		{
-			SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_SETCURSEL, 3, 0);
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 3, 0);
+		}
+		else if (lCfg.ImgWidth == 256)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 4, 0);
+		}
+		else if (lCfg.ImgWidth == 512)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 5, 0);
+		}
+		else if (lCfg.ImgWidth == 1024)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 6, 0);
+		}
+		else if (lCfg.ImgWidth == 2048)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 7, 0);
+		}
+		else if (lCfg.ImgWidth == 4096)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 8, 0);
 		}
 		else
 		{
-			SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_SETCURSEL, 0, 0);
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 0, 0);
+		}
+
+		if (lCfg.ImgHeight == 32)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 1, 0);
+		}
+		else if (lCfg.ImgHeight == 64)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 2, 0);
+		}
+		else if (lCfg.ImgHeight == 128)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 3, 0);
+		}
+		else if (lCfg.ImgHeight == 256)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 4, 0);
+		}
+		else if (lCfg.ImgHeight == 512)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 5, 0);
+		}
+		else if (lCfg.ImgHeight == 1024)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 6, 0);
+		}
+		else if (lCfg.ImgHeight == 2048)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 7, 0);
+		}
+		else if (lCfg.ImgHeight == 4096)
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 8, 0);
+		}
+		else
+		{
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 0, 0);
 		}
 
 		// Set grid and width checks
@@ -91,6 +186,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, SPN_CFG_CELLHEIGHT, UDM_SETRANGE, 0, MAKELONG(128, 8));
 		SendDlgItemMessage(hDlg, SPN_CFG_FONTHEIGHT, UDM_SETRANGE, 0, MAKELONG(100, 1));
 		SendDlgItemMessage(hDlg, SPN_CFG_FONTWIDTH, UDM_SETRANGE, 0, MAKELONG(100, 0));
+
 		return 0;
 
 	case WM_DRAWITEM:
@@ -112,11 +208,36 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	case WM_HSCROLL:
+		Sel = SendDlgItemMessage(hDlg, CBO_CFG_ITEM, CB_GETCURSEL, 0, 0);
+
 		if ((HWND)lParam == GetDlgItem(hDlg, SLD_RED))
 		{
 			Red = SendDlgItemMessage(hDlg, SLD_RED, TBM_GETPOS, 0, 0);
 			wsprintf(Text, "%d", Red);
 			SendDlgItemMessage(hDlg, TXT_RED, WM_SETTEXT, 0, (LPARAM)Text);
+
+			switch (Sel)
+			{
+			case GRIDCOL:
+				lCfg.GridCol.Red = Red;
+				break;
+
+			case WIDTHCOL:
+				lCfg.WidthCol.Red = Red;
+				break;
+
+			case SELCOL:
+				lCfg.SelCol.Red = Red;
+				break;
+
+			case BACKCOL:
+				lCfg.BackCol.Red = Red;
+				break;
+
+			case TEXTCOL:
+				lCfg.ForeCol.Red = Red;
+				break;
+			}
 		}
 
 		if ((HWND)lParam == GetDlgItem(hDlg, SLD_GREEN))
@@ -124,6 +245,29 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			Green = SendDlgItemMessage(hDlg, SLD_GREEN, TBM_GETPOS, 0, 0);
 			wsprintf(Text, "%d", Green);
 			SendDlgItemMessage(hDlg, TXT_GREEN, WM_SETTEXT, 0, (LPARAM)Text);
+
+			switch (Sel)
+			{
+			case GRIDCOL:
+				lCfg.GridCol.Green = Green;
+				break;
+
+			case WIDTHCOL:
+				lCfg.WidthCol.Green = Green;
+				break;
+
+			case SELCOL:
+				lCfg.SelCol.Green = Green;
+				break;
+
+			case BACKCOL:
+				lCfg.BackCol.Green = Green;
+				break;
+
+			case TEXTCOL:
+				lCfg.ForeCol.Green = Green;
+				break;
+			}
 		}
 
 		if ((HWND)lParam == GetDlgItem(hDlg, SLD_BLUE))
@@ -131,16 +275,39 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			Blue = SendDlgItemMessage(hDlg, SLD_BLUE, TBM_GETPOS, 0, 0);
 			wsprintf(Text, "%d", Blue);
 			SendDlgItemMessage(hDlg, TXT_BLUE, WM_SETTEXT, 0, (LPARAM)Text);
+
+			switch (Sel)
+			{
+			case GRIDCOL:
+				lCfg.GridCol.Blue = Blue;
+				break;
+
+			case WIDTHCOL:
+				lCfg.WidthCol.Blue = Blue;
+				break;
+
+			case SELCOL:
+				lCfg.SelCol.Blue = Blue;
+				break;
+
+			case BACKCOL:
+				lCfg.BackCol.Blue = Blue;
+				break;
+
+			case TEXTCOL:
+				lCfg.ForeCol.Blue = Blue;
+				break;
+			}
 		}
+
 		InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
-		cfgChange = TRUE;
 		return TRUE;
 
 	case WM_COMMAND:
 	{
 		switch (HIWORD(wParam)) // Notifications
 		{
-		case EN_CHANGE:
+		case EN_KILLFOCUS:
 			if (LOWORD(wParam) == TXT_RED)
 			{
 				Sel = SendDlgItemMessage(hDlg, CBO_CFG_ITEM, CB_GETCURSEL, 0, 0);
@@ -390,29 +557,54 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 				}
 
+				InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
 				return TRUE;
 
-			case CBO_CFG_IMGSIZE:
-				cfgChange = TRUE;
-				Sel = SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_GETCURSEL, 0, 0);
+			case CBO_CFG_IMGXSIZE:
+				Sel = SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_GETCURSEL, 0, 0);
 				if (Sel == 0)
 				{
-					lCfg.ImgSize = 64;
+					lCfg.ImgWidth = 16;
 					return TRUE;
 				}
 				else if (Sel == 1)
 				{
-					lCfg.ImgSize = 128;
+					lCfg.ImgWidth = 32;
 					return TRUE;
 				}
 				else if (Sel == 2)
 				{
-					lCfg.ImgSize = 256;
+					lCfg.ImgWidth = 64;
 					return TRUE;
 				}
 				else if (Sel == 3)
 				{
-					lCfg.ImgSize = 512;
+					lCfg.ImgWidth = 128;
+					return TRUE;
+				}
+				else if (Sel == 4)
+				{
+					lCfg.ImgWidth = 256;
+					return TRUE;
+				}
+				else if (Sel == 5)
+				{
+					lCfg.ImgWidth = 512;
+					return TRUE;
+				}
+				else if (Sel == 6)
+				{
+					lCfg.ImgWidth = 1024;
+					return TRUE;
+				}
+				else if (Sel == 7)
+				{
+					lCfg.ImgWidth = 2048;
+					return TRUE;
+				}
+				else if (Sel == 8)
+				{
+					lCfg.ImgWidth = 4096;
 					return TRUE;
 				}
 				else
@@ -420,6 +612,57 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					return FALSE;
 				}
 
+			case CBO_CFG_IMGYSIZE:
+				Sel = SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_GETCURSEL, 0, 0);
+				if (Sel == 0)
+				{
+					lCfg.ImgHeight = 16;
+					return TRUE;
+				}
+				else if (Sel == 1)
+				{
+					lCfg.ImgHeight = 32;
+					return TRUE;
+				}
+				else if (Sel == 2)
+				{
+					lCfg.ImgHeight = 64;
+					return TRUE;
+				}
+				else if (Sel == 3)
+				{
+					lCfg.ImgHeight = 128;
+					return TRUE;
+				}
+				else if (Sel == 4)
+				{
+					lCfg.ImgHeight = 256;
+					return TRUE;
+				}
+				else if (Sel == 5)
+				{
+					lCfg.ImgHeight = 512;
+					return TRUE;
+				}
+				else if (Sel == 6)
+				{
+					lCfg.ImgHeight = 1024;
+					return TRUE;
+				}
+				else if (Sel == 7)
+				{
+					lCfg.ImgHeight = 2048;
+					return TRUE;
+				}
+				else if (Sel == 8)
+				{
+					lCfg.ImgHeight = 4096;
+					return TRUE;
+				}
+				else
+				{
+					return FALSE;
+				}
 			}
 			return FALSE;
 		}
@@ -435,8 +678,6 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				lCfg.Flags ^= SHOW_GRID;
 			}
-
-			cfgChange = TRUE;
 			return TRUE;
 
 		case CHK_CFG_WIDTH:
@@ -448,24 +689,50 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				lCfg.Flags ^= SHOW_WIDTH;
 			}
-
-			cfgChange = TRUE;
 			return TRUE;
 
 		case ID_OK:
-			//memcpy(AppCfg,&lCfg,sizeof(AppConfig));
+			// Set config
+			Fnt->SetSize(CELLHEIGHT, lCfg.CellHeight);
+			Fnt->SetSize(CELLWIDTH, lCfg.CellWidth);
+			Fnt->SetFontHeight(lCfg.FontHeight);
+			Fnt->SetFontWidth(lCfg.FontWidth);
+			Fnt->SetSize(MAPWIDTH, lCfg.ImgWidth);
+			Fnt->SetSize(MAPHEIGHT, lCfg.ImgHeight);
+			info->Grid = lCfg.Flags & SHOW_GRID;
+			info->wMarker = lCfg.Flags & SHOW_WIDTH;
+			Fnt->SetCol(BACKCOL, lCfg.BackCol);
+			Fnt->SetCol(TEXTCOL, lCfg.ForeCol);
+			Fnt->SetCol(GRIDCOL, lCfg.GridCol);
+			Fnt->SetCol(WIDTHCOL, lCfg.WidthCol);
+			Fnt->SetCol(SELCOL, lCfg.SelCol);
+
 			EndDialog(hDlg, 0);
 			return 0;
 
 		case IDSAVE:
-			/*memcpy(AppCfg,&lCfg,sizeof(AppConfig));
-			if(!SaveConfig("bfg.cfg",&lCfg))
+			// Set config
+			Fnt->SetSize(CELLHEIGHT, lCfg.CellHeight);
+			Fnt->SetSize(CELLWIDTH, lCfg.CellWidth);
+			Fnt->SetFontHeight(lCfg.FontHeight);
+			Fnt->SetFontWidth(lCfg.FontWidth);
+			Fnt->SetSize(MAPWIDTH, lCfg.ImgWidth);
+			Fnt->SetSize(MAPHEIGHT, lCfg.ImgHeight);
+			info->Grid = lCfg.Flags & SHOW_GRID;
+			info->wMarker = lCfg.Flags & SHOW_WIDTH;
+			Fnt->SetCol(BACKCOL, lCfg.BackCol);
+			Fnt->SetCol(TEXTCOL, lCfg.ForeCol);
+			Fnt->SetCol(GRIDCOL, lCfg.GridCol);
+			Fnt->SetCol(WIDTHCOL, lCfg.WidthCol);
+			Fnt->SetCol(SELCOL, lCfg.SelCol);
+
+			if (!Fnt->SaveConfig("bfg.cfg", info->Grid, info->wMarker))
 			{
-				MessageBox(hDlg,"Unable to save config file","File Error",MB_OK|MB_ICONERROR);
+				MessageBox(hDlg, "Unable to save config file", "File Error", MB_OK | MB_ICONERROR);
 				return 0;
-			}*/
+			}
+
 			EndDialog(hDlg, 0);
-			cfgChange = FALSE;
 			return 0;
 
 		case IDDEFAULT:
@@ -475,10 +742,11 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				return TRUE;
 			}
 
-			cfgChange = TRUE;
+			lCfg.ImgWidth = 256;
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGXSIZE, CB_SETCURSEL, 2, 0);
 
-			lCfg.ImgSize = 256;
-			SendDlgItemMessage(hDlg, CBO_CFG_IMGSIZE, CB_SETCURSEL, 2, 0);
+			lCfg.ImgHeight = 256;
+			SendDlgItemMessage(hDlg, CBO_CFG_IMGYSIZE, CB_SETCURSEL, 2, 0);
 
 			lCfg.CellHeight = 32;
 			SendDlgItemMessage(hDlg, TXT_CFG_CELLHEIGHT, WM_SETTEXT, 256, (LPARAM)"32");
@@ -489,19 +757,19 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lCfg.FontWidth = 0;
 			SendDlgItemMessage(hDlg, TXT_CFG_FONTWIDTH, WM_SETTEXT, 256, (LPARAM)"0");
 
-			Fnt->SetCol(BACKCOL, 0, 0, 0);
-			Fnt->SetCol(TEXTCOL, 255, 255, 255);
-			Fnt->SetCol(GRIDCOL, 170, 0, 170);
-			Fnt->SetCol(WIDTHCOL, 170, 170, 0);
-			Fnt->SetCol(SELCOL, 0, 154, 0);
+			lCfg.BackCol = MakeRGB(0, 0, 0);
+			lCfg.ForeCol = MakeRGB(255, 255, 255);
+			lCfg.GridCol = MakeRGB(170, 0, 170);
+			lCfg.WidthCol = MakeRGB(170, 170, 0);
+			lCfg.SelCol = MakeRGB(0, 154, 0);
 
 			SendDlgItemMessage(hDlg, CBO_CFG_ITEM, CB_SETCURSEL, 0, 0);
-			SetConfigRGB(hDlg, Fnt->GetCol(BACKCOL));
+
+			SetConfigRGB(hDlg, lCfg.GridCol);
 
 			lCfg.Flags = SHOW_GRID | SHOW_WIDTH;
 			SendDlgItemMessage(hDlg, CHK_CFG_GRID, BM_SETCHECK, BST_CHECKED, 0);
 			SendDlgItemMessage(hDlg, CHK_CFG_WIDTH, BM_SETCHECK, BST_CHECKED, 0);
-
 			return 0;
 
 		case IDCANCEL:
@@ -513,16 +781,4 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	default:
 		return 0;
 	}
-}
-
-void SetConfigRGB(HWND Win, BFG_RGB Cols)
-{
-	char Text[256];
-
-	wsprintf(Text, "%d", Cols.Red);
-	SendDlgItemMessage(Win, TXT_RED, WM_SETTEXT, 0, (LPARAM)Text);
-	wsprintf(Text, "%d", Cols.Green);
-	SendDlgItemMessage(Win, TXT_GREEN, WM_SETTEXT, 0, (LPARAM)Text);
-	wsprintf(Text, "%d", Cols.Blue);
-	SendDlgItemMessage(Win, TXT_BLUE, WM_SETTEXT, 0, (LPARAM)Text);
 }

@@ -1,7 +1,6 @@
-#include "stdafx.h"
-#include <memory.h>
-#include "FontMapClass.h"
-#include "UtilFunctions.h"
+#include "pch.h"
+#include "font.h"
+#include "utils.h"
 
 BFontMap::BFontMap()
 {

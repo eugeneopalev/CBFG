@@ -1,8 +1,7 @@
-#include "stdafx.h"
-#include "Procs.h"
-#include "CBFGDefs.h"
-#include "FontMapClass.h"
-#include "SBM-Util.h"
+#include "pch.h"
+#include "defs.h"
+#include "font.h"
+#include "utils.h"
 #include <time.h>
 #include <gl\gl.h>
 

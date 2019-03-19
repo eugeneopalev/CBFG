@@ -1,7 +1,6 @@
-#include "stdafx.h"
-
-#ifndef _CBFGDEFS_H
-#define _CBFGDEFS_H
+#ifndef DEFS_H
+#define DEFS_H
+#include "pch.h"
 
 #define APP_VERSION 1.41
 

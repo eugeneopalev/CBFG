@@ -1,5 +1,37 @@
-#ifndef _SBM_UTIL
-#define _SBM_UTIL
+#ifndef UTILS_H
+#define UTILS_H
+
+#include "utils.h"
+#include "font.h"
+
+#define EXPORT_TGA   1
+#define EXPORT_BMP   2
+#define EXPORT_TXT   3
+#define EXPORT_TGA32 4
+
+typedef struct
+{
+	int CellWidth, CellHeight, ImgSize;
+	LOGFONT FntDef;
+	HFONT fnt;
+	int CharBase;
+	char width[256];
+	char wAdj[256];
+	char hAdj[256];
+	char vAdj[256];
+	char ghAdj, gvAdj, gwAdj;
+} Config;
+
+BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue);
+char Limit(int Val);
+int LimitSelection(int Sel, int MaxChar);
+void CreateFontMap();
+HBITMAP *RenderFont(bool Markers);
+unsigned char *MakeAlpha();
+void CalcScroll();
+int ExportMap(char *fname, int fmt);
+BOOL CheckOverwrite(char *fname);
+
 // SBM (Simple BitMap) Loader
 
 // Change Log
@@ -24,7 +56,6 @@
 #define SBM_ERR_BAD_FORMAT  0x8
 #define SBM_ERR_UNSUPPORTED 0x40
 
-#pragma once
 #include <fstream>
 #include <memory.h>
 using namespace std;

@@ -35,83 +35,77 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CBFG.cpp">
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ConfigProc.cpp">
+    <ClCompile Include="splash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FileRequest.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FontMapClass.cpp">
+    <ClCompile Include="cbfg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainProc.cpp">
+    <ClCompile Include="config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PreviewProc.cpp">
+    <ClCompile Include="preview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SaveOptProc.cpp">
+    <ClCompile Include="font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SBM-Util.cpp">
+    <ClCompile Include="about.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SplashProc.cpp">
+    <ClCompile Include="saveopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StdAfx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextWinProc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UtilFunctions.cpp">
+    <ClCompile Include="filedlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CBFGDefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConfigWindow.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="file-request.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FontMapClass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MainProc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Procs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SBM-Util.h">
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SplashProc.h">
+    <ClInclude Include="splash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdAfx.h">
+    <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TestWindow.h">
+    <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UtilFunctions.h">
+    <ClInclude Include="font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cbfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="preview.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="about.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="saveopt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="filedlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Script1.rc">
+    <ResourceCompile Include="CBFG.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

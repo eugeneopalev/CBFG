@@ -52,6 +52,7 @@
       <StructMemberAlignment>1Byte</StructMemberAlignment>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0809</Culture>
@@ -71,6 +72,7 @@
       <StructMemberAlignment>1Byte</StructMemberAlignment>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -90,38 +92,36 @@
     <Image Include="ico_up.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CBFG.cpp" />
-    <ClCompile Include="ConfigProc.cpp" />
-    <ClCompile Include="FileRequest.cpp" />
-    <ClCompile Include="FontMapClass.cpp" />
-    <ClCompile Include="MainProc.cpp" />
-    <ClCompile Include="PreviewProc.cpp" />
-    <ClCompile Include="SaveOptProc.cpp" />
-    <ClCompile Include="SBM-Util.cpp" />
-    <ClCompile Include="SplashProc.cpp" />
-    <ClCompile Include="StdAfx.cpp">
+    <ClCompile Include="about.cpp" />
+    <ClCompile Include="cbfg.cpp" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="filedlg.cpp" />
+    <ClCompile Include="font.cpp" />
+    <ClCompile Include="preview.cpp" />
+    <ClCompile Include="saveopt.cpp" />
+    <ClCompile Include="splash.cpp" />
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TextWinProc.cpp" />
-    <ClCompile Include="UtilFunctions.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CBFGDefs.h" />
-    <ClInclude Include="ConfigWindow.h" />
-    <ClInclude Include="file-request.h" />
-    <ClInclude Include="FontMapClass.h" />
-    <ClInclude Include="MainProc.h" />
-    <ClInclude Include="Procs.h" />
+    <ClInclude Include="about.h" />
+    <ClInclude Include="cbfg.h" />
+    <ClInclude Include="defs.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="filedlg.h" />
+    <ClInclude Include="font.h" />
+    <ClInclude Include="preview.h" />
+    <ClInclude Include="saveopt.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SBM-Util.h" />
-    <ClInclude Include="SplashProc.h" />
-    <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="TestWindow.h" />
-    <ClInclude Include="UtilFunctions.h" />
+    <ClInclude Include="splash.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Script1.rc" />
+    <ResourceCompile Include="CBFG.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

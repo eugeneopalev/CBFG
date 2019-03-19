@@ -1,9 +1,9 @@
-#ifndef _FONTMAPCLASS_H
-#define _FONTMAPCLASS_H
+#ifndef FONT_H
+#define FONT_H
 
 #include <windows.h>
-#include "cbfgdefs.h"
-#include "UtilFunctions.h"
+#include "defs.h"
+#include "utils.h"
 
 class BFontMap
 {

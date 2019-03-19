@@ -1,6 +1,6 @@
-#include "stdafx.h"
-#include "CBFGDefs.h"
-#include "Procs.h"
+#include "pch.h"
+#include "defs.h"
+#include "saveopt.h"
 
 BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

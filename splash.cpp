@@ -1,12 +1,13 @@
+#include "pch.h"
+
+extern HWND hMain;
 
 BOOL CALLBACK SplashWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	extern HWND hMain;
-
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		SetTimer(hDlg, 246, 3000, NULL);
+		SetTimer(hDlg, 246, 2800, NULL);
 		return true;
 
 	case WM_MOUSEACTIVATE:

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "pch.h"
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
