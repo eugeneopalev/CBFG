@@ -7,11 +7,7 @@
 #include "preview.h"
 #include "config.h"
 #include "about.h"
-#include "splash.h"
-
-// Required includes for Win2000
-#include "Ws2tcpip.h"
-#include "Wspiapi.h"
+#include "resource.h"
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
@@ -1142,13 +1138,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			CreateFontMap();
 			return TRUE;
 
-		case ID_HELP_CONTENTS:
-			if ((int)ShellExecute(hDlg, "open", "CBFGHelp.chm", NULL, NULL, SW_SHOWMAXIMIZED) < 32)
-			{
-				MessageBox(hDlg, "Unable to open Help file", "Error", MB_OK | MB_ICONERROR);
-			}
-			return TRUE;
-
 		case ID_HELP_ABOUT:
 			DialogBox(G_Inst, MAKEINTRESOURCE(DLG_ABOUT), hMain, AboutProc);
 			return TRUE;
@@ -1464,10 +1453,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 	Fnt = &Bf;
 	info = &AppInf;
-
-	hText = CreateDialog(G_Inst, MAKEINTRESOURCE(DLG_SPLASH), NULL, (DLGPROC)SplashWinProc);
-	SetWindowText(hText, "Codehead's Bitmap Font Generator");
-	SetWindowPos(hText, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
 	// Load config or set defaults
 	Ret = Fnt->LoadConfig("bfg.cfg");

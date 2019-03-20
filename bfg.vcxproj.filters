@@ -18,9 +18,6 @@
     <Image Include="AppIcon.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="BFG2.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="ico_down.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -36,9 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="splash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -73,9 +67,6 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="splash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -101,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="filedlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "resource.h"
 
 BOOL CALLBACK AboutProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

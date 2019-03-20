@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "defs.h"
 #include "saveopt.h"
+#include "resource.h"
 
 BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {

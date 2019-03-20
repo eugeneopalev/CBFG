@@ -2,8 +2,7 @@
 #include "defs.h"
 #include "font.h"
 #include "utils.h"
-#include <time.h>
-#include <gl\gl.h>
+#include "resource.h"
 
 GLuint TexName;
 HDC glDC;

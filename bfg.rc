@@ -1,7 +1,19 @@
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
-#include "winres.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
@@ -22,6 +34,9 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
     "\0"
 END
 
@@ -33,16 +48,6 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (United Kingdom) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
-#pragma code_page(1252)
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -52,10 +57,15 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 APP_ICON                ICON                    "AppIcon.ico"
+
 ICO_UP                  ICON                    "ico_up.ico"
+
 ICO_DOWN                ICON                    "ico_down.ico"
+
 ICO_RIGHT               ICON                    "ico_right.ico"
+
 ICO_LEFT                ICON                    "ico_left.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -131,17 +141,16 @@ BEGIN
     CTEXT           "Colour",IDC_STATIC,232,250,37,10
 END
 
-DLG_ABOUT DIALOGEX 0, 0, 344, 274
+DLG_ABOUT DIALOGEX 0, 0, 345, 150
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
 CAPTION "About Codehead's Bitmap Font Generator"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,147,245,50,14
-    CONTROL         117,IDC_STATIC,"Static",SS_BITMAP | WS_BORDER,20,11,304,105,WS_EX_CLIENTEDGE
-    LTEXT           "Codehead - Dec 2015",IDC_STATIC,25,118,122,10
-    RTEXT           "Github Release - v1.45",IDC_STATIC,234,118,84,13
-    CTEXT           "A tool for creating bitmapped fonts for use in graphical applications",IDC_STATIC,22,132,301,10
-    LISTBOX         LST_CREDITS,24,148,296,86,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,145,128,50,14
+    LTEXT           "Codehead - Dec 2015",IDC_STATIC,7,7,122,10
+    RTEXT           "Github Release - v1.45",IDC_STATIC,254,7,84,13
+    CTEXT           "A tool for creating bitmapped fonts for use in graphical applications",IDC_STATIC,7,19,331,10
+    LISTBOX         LST_CREDITS,7,33,331,86,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
 DLG_SAVEOPT DIALOGEX 0, 0, 129, 111
@@ -213,14 +222,6 @@ BEGIN
     CONTROL         "",IDC_GL,"Static",SS_OWNERDRAW | SS_SUNKEN,6,7,537,181,WS_EX_STATICEDGE
 END
 
-DLG_SPLASH DIALOGEX 0, 0, 316, 116
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_CENTER | WS_POPUP | WS_VISIBLE
-EXSTYLE WS_EX_TOOLWINDOW
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    CONTROL         117,IDB_BITMAP1,"Static",SS_BITMAP | SS_NOTIFY | SS_REALSIZEIMAGE,7,7,303,102
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -241,9 +242,9 @@ BEGIN
     DLG_ABOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 337
+        RIGHTMARGIN, 338
         TOPMARGIN, 7
-        BOTTOMMARGIN, 266
+        BOTTOMMARGIN, 142
     END
 
     DLG_SAVEOPT, DIALOG
@@ -268,14 +269,6 @@ BEGIN
         RIGHTMARGIN, 543
         TOPMARGIN, 7
         BOTTOMMARGIN, 243
-    END
-
-    DLG_SPLASH, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 309
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 109
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -333,18 +326,10 @@ BEGIN
     END
     POPUP "Help"
     BEGIN
-        MENUITEM "Contents",                    ID_HELP_CONTENTS
         MENUITEM "About",                       ID_HELP_ABOUT
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-BFG_LOGO                BITMAP                  "BFG2.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -384,7 +369,18 @@ BEGIN
     END
 END
 
-#endif    // English (United Kingdom) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+DLG_ABOUT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -398,3 +394,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+

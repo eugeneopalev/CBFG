@@ -1,7 +1,8 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Script1.rc
+// Used by bfg.rc
 //
+#define VS_VERSION_INFO                 1
 #define CMD_TEST_CLEAR                  2
 #define IDSAVE                          3
 #define CMD_TEST_CLEAR2                 3
@@ -18,9 +19,6 @@
 #define DLG_SAVEOPT                     113
 #define DLG_CONFIG                      114
 #define DLG_PREVIEW                     115
-#define IDB_BITMAP1                     117
-#define BFG_LOGO                        117
-#define DLG_SPLASH                      119
 #define IMG_TEXT                        1000
 #define IDC_COMBO1                      1001
 #define CBO_FONTS                       1001
@@ -131,7 +129,6 @@
 #define ID_FONT_TEST                    40025
 #define ID_TOOLS_EXTRACTIMAGE           40027
 #define ID_TOOLS_IMPORTIMAGE            40028
-#define ID_HELP_CONTENTS                40029
 #define ID_TOOLS_CONFIGURATION          40030
 #define ID_VIEW_WIDTHMARKERS            40032
 #define ID_FILE_SAVEBFF                 40033
@@ -147,9 +144,10 @@
 #define ID_FONT_COLOUR                  40047
 #define ID_COLOUR_SETTEXTCOLOUR         40048
 #define ID_COLOUR_SETBACKGROUNDCOLOUR   40049
+#define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        121

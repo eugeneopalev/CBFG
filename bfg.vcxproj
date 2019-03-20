@@ -54,11 +54,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ResourceCompile>
-      <Culture>0x0809</Culture>
-    </ResourceCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,15 +74,11 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <ResourceCompile>
-      <Culture>0x0809</Culture>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Image Include="AppIcon.ico" />
-    <Image Include="BFG2.bmp" />
     <Image Include="ico_down.ico" />
     <Image Include="ico_left.ico" />
     <Image Include="ico_right.ico" />
@@ -99,7 +92,6 @@
     <ClCompile Include="font.cpp" />
     <ClCompile Include="preview.cpp" />
     <ClCompile Include="saveopt.cpp" />
-    <ClCompile Include="splash.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -116,9 +108,9 @@
     <ClInclude Include="preview.h" />
     <ClInclude Include="saveopt.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="splash.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="windows.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bfg.rc" />

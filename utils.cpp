@@ -1,12 +1,8 @@
 #include "pch.h"
 #include "stdio.h"
-#include <windows.h>
 #include "font.h"
 #include "utils.h"
-#include <winsock2.h>
-#include <Ws2tcpip.h>
-
-#pragma comment (lib,"ws2_32.lib")
+#include "resource.h"
 
 extern HWND hMain;
 extern BFontMap *Fnt;
