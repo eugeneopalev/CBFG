@@ -159,8 +159,7 @@ unsigned char BFontMap::SetBaseChar(int NewBase)
 		NewBase = 255;
 	}
 
-	BaseChar = NewBase;
-	return BaseChar;
+	return BaseChar = (unsigned char)NewBase;
 }
 
 unsigned char BFontMap::GetBaseChar()
@@ -168,7 +167,7 @@ unsigned char BFontMap::GetBaseChar()
 	return BaseChar;
 }
 
-char BFontMap::SetGlobal(int Which, char Value)
+int BFontMap::SetGlobal(int Which, int Value)
 {
 	switch (Which)
 	{
@@ -188,7 +187,7 @@ char BFontMap::SetGlobal(int Which, char Value)
 	return Value;
 }
 
-char BFontMap::GetGlobal(int Which)
+int BFontMap::GetGlobal(int Which)
 {
 	switch (Which)
 	{
@@ -205,7 +204,7 @@ char BFontMap::GetGlobal(int Which)
 	return 0;
 }
 
-char BFontMap::SetCharVal(int Char, int Which, char NewVal)
+int BFontMap::SetCharVal(int Char, int Which, int NewVal)
 {
 	switch (Which)
 	{
@@ -225,7 +224,7 @@ char BFontMap::SetCharVal(int Char, int Which, char NewVal)
 	return NewVal;
 }
 
-char BFontMap::GetCharVal(int Char, int Which)
+int BFontMap::GetCharVal(int Char, int Which)
 {
 	switch (Which)
 	{
@@ -478,7 +477,7 @@ HBITMAP *BFontMap::DrawFontMap(int Flags, int Sel)
 	HRGN ClipRgn;
 	RECT CharArea;
 	char Symbol[2];
-	unsigned char eVal;
+	int eVal;
 
 	// Create Device context
 	wDC = CreateDC("DISPLAY", NULL, NULL, NULL);
@@ -647,22 +646,22 @@ HBITMAP *BFontMap::DrawFontMap(int Flags, int Sel)
 
 int BFontMap::LoadConfig(const char *fname)
 {
-	ifstream cfgfile;
-	long fSize;
+	std::ifstream cfgfile;
+	unsigned long fSize;
 	char *dat;
 	char Hdr[7];
 	int tVal, Flags;
 
-	cfgfile.open(fname, ios::binary);
+	cfgfile.open(fname, std::ios::binary);
 
 	if (cfgfile.fail())
 	{
 		return -1;
 	}
 
-	cfgfile.seekg(0, ios_base::end);
-	fSize = cfgfile.tellg();
-	cfgfile.seekg(0, ios_base::beg);
+	cfgfile.seekg(0, std::ios_base::end);
+	fSize = (unsigned long)cfgfile.tellg();
+	cfgfile.seekg(0, std::ios_base::beg);
 
 	dat = new char[fSize];
 
@@ -694,11 +693,11 @@ int BFontMap::LoadConfig(const char *fname)
 	memcpy(&tVal, &dat[26], 4);
 	FntDef.lfWidth = tVal;
 	memcpy(&Flags, &dat[30], 4);
-	memcpy(&GridCol, &dat[34], 3);
-	memcpy(&WidthCol, &dat[37], 3);
-	memcpy(&SelCol, &dat[40], 3);
-	memcpy(&TextCol, &dat[43], 3);
-	memcpy(&BkCol, &dat[46], 3);
+	memcpy(&GridCol, &dat[34], sizeof(GridCol));
+	memcpy(&WidthCol, &dat[46], sizeof(WidthCol));
+	memcpy(&SelCol, &dat[58], sizeof(SelCol));
+	memcpy(&TextCol, &dat[70], sizeof(TextCol));
+	memcpy(&BkCol, &dat[82], sizeof(BkCol));
 
 	delete [] dat;
 
@@ -707,10 +706,10 @@ int BFontMap::LoadConfig(const char *fname)
 
 bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 {
-	ofstream cfgfile;
+	std::ofstream cfgfile;
 	int tVal, Flags = 0;
 
-	cfgfile.open(fname, ios_base::binary | ios_base::trunc);
+	cfgfile.open(fname, std::ios_base::binary | std::ios_base::trunc);
 
 	if (cfgfile.fail())
 	{
@@ -718,14 +717,14 @@ bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 	}
 
 	cfgfile.write("BFGCFG", 6);
-	cfgfile.write((char *)&MapWidth, sizeof(int));
-	cfgfile.write((char *)&MapHeight, sizeof(int));
-	cfgfile.write((char *)&CellWidth, sizeof(int));
-	cfgfile.write((char *)&CellHeight, sizeof(int));
+	cfgfile.write((const char *)&MapWidth, sizeof(int));
+	cfgfile.write((const char *)&MapHeight, sizeof(int));
+	cfgfile.write((const char *)&CellWidth, sizeof(int));
+	cfgfile.write((const char *)&CellHeight, sizeof(int));
 	tVal = (int)FntDef.lfHeight;
-	cfgfile.write((char *)&tVal, sizeof(int));
+	cfgfile.write((const char *)&tVal, sizeof(int));
 	tVal = (int)FntDef.lfWidth;
-	cfgfile.write((char *)&tVal, sizeof(int));
+	cfgfile.write((const char *)&tVal, sizeof(int));
 	if (Grid)
 	{
 		Flags |= SHOW_GRID;
@@ -734,12 +733,12 @@ bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 	{
 		Flags |= SHOW_WIDTH;
 	}
-	cfgfile.write((char *)&Flags, sizeof(int));
-	cfgfile.write((char *)&GridCol, sizeof(BFG_RGB));
-	cfgfile.write((char *)&WidthCol, sizeof(BFG_RGB));
-	cfgfile.write((char *)&SelCol, sizeof(BFG_RGB));
-	cfgfile.write((char *)&TextCol, sizeof(BFG_RGB));
-	cfgfile.write((char *)&BkCol, sizeof(BFG_RGB));
+	cfgfile.write((const char *)&Flags, sizeof(Flags));
+	cfgfile.write((const char *)&GridCol, sizeof(GridCol));
+	cfgfile.write((const char *)&WidthCol, sizeof(WidthCol));
+	cfgfile.write((const char *)&SelCol, sizeof(SelCol));
+	cfgfile.write((const char *)&TextCol, sizeof(TextCol));
+	cfgfile.write((const char *)&BkCol, sizeof(BkCol));
 
 	cfgfile.close();
 
@@ -802,15 +801,15 @@ bool BFontMap::SaveFont(int Format, char *fname, int flags)
 
 bool BFontMap::SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat)
 {
-	ofstream out;
+	std::ofstream out;
 	HBITMAP *hBMP;
 	FontFileHeader Hdr;
 	DIBSECTION bmInfo;
 	SBM_Image FntImg, AlphaImg;
 	int Loop;
-	unsigned char EffWidth[256];
+	int EffWidth[256];
 
-	out.open(fname, ios::binary | ios::trunc);
+	out.open(fname, std::ios::binary | std::ios::trunc);
 	if (out.fail())
 	{
 		return false;
@@ -908,7 +907,7 @@ bool BFontMap::SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat)
 	FntImg.FlipImg();
 
 	// Write header data
-	out.write((char *)&Hdr, sizeof(Hdr));
+	out.write((const char *)&Hdr, sizeof(Hdr));
 
 	// Write char widths
 	for (Loop = 0; Loop != 256; ++Loop)
@@ -916,10 +915,10 @@ bool BFontMap::SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat)
 		EffWidth[Loop] = BaseWidth[Loop] + WidthMod[Loop] + gWidthMod;
 	}
 
-	out.write((char *)EffWidth, 256);
+	out.write((const char *)EffWidth, 256);
 
 	// Write bitmap
-	out.write((char *)FntImg.GetImg(), (Hdr.ImageWidth * Hdr.ImageHeight) * (OutputBPP / 8));
+	out.write((const char *)FntImg.GetImg(), (Hdr.ImageWidth * Hdr.ImageHeight) * (OutputBPP / 8));
 
 	out.close();
 
@@ -928,14 +927,14 @@ bool BFontMap::SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat)
 
 int BFontMap::ExportMap(char *fname, int fmt)
 {
-	ofstream out;
+	std::ofstream out;
 	HBITMAP *hBMP;
 	FontFileHeader Hdr;
 	DIBSECTION bmInfo;
 	SBM_Image FntImg, AlphaImg;
 	int Result;
 
-	out.open(fname, ios::binary | ios::trunc);
+	out.open(fname, std::ios::binary | std::ios::trunc);
 	if (out.fail())
 	{
 		return false;
@@ -1021,194 +1020,234 @@ int BFontMap::ExportMap(char *fname, int fmt)
 
 bool BFontMap::ImportData(char *fname)
 {
-	/*  extern BFontMap *Fnt;
+	UNREFERENCED_PARAMETER(fname);
 
-	  FILE *in;
-	  long fsize,datptr;
-	  int Index,Val;
-	  char *data;
+#if 0
+	extern BFontMap *Fnt;
 
-	  in=fopen(fname,"r");
+	FILE *in;
+	long fsize, datptr;
+	int Index, Val;
+	char *data;
 
-	   if(in==NULL)
-	    return FALSE;
+	in = fopen(fname, "r");
 
-	  // Get filesize
-	  fseek(in,0,SEEK_END);
-	  fsize=ftell(in);
-	  rewind(in);
+	if (in == NULL)
+	{
+		return FALSE;
+	}
 
-	  // Allocate space for file contents
-	  data = new char[fsize];
+	// Get filesize
+	fseek(in, 0, SEEK_END);
+	fsize = ftell(in);
+	rewind(in);
 
-	   if(data==NULL)
-	    {
-	     fclose(in);
-	     return FALSE;
-	    }
+	// Allocate space for file contents
+	data = new char[fsize];
 
-	  // Read in the file contents
-	  fread(data,fsize,1,in);
-	  fclose(in);
+	if (data == NULL)
+	{
+		fclose(in);
+		return FALSE;
+	}
 
-	  // Extract the font data
-	  datptr=0;
+	// Read in the file contents
+	fread(data, fsize, 1, in);
+	fclose(in);
 
-	  // Image Width
-	   while(data[datptr]!=',')
-	    ++datptr;
+	// Extract the font data
+	datptr = 0;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->ImgSize));
+	// Image Width
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Image Height
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->ImgSize));
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->ImgSize));
+	// Image Height
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Cell Width
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->ImgSize));
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->CellHeight));
+	// Cell Width
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Cell Height
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->CellHeight));
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->CellHeight));
+	// Cell Height
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Start char
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->CellHeight));
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->CharBase));
+	// Start char
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Font Name
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->CharBase));
 
-	  datptr++;
-	  Index=0;
-	   while(data[datptr]!='\n')
-	    {
-	     cfg->FntDef.lfFaceName[Index]=data[datptr];
-	     ++Index;
-	     ++datptr;
-	    }
-	  cfg->FntDef.lfFaceName[Index]=NULL;
+	// Font Name
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Font Height
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	Index = 0;
+	while (data[datptr] != '\n')
+	{
+		cfg->FntDef.lfFaceName[Index] = data[datptr];
+		++Index;
+		++datptr;
+	}
+	cfg->FntDef.lfFaceName[Index] = NULL;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->FntDef.lfHeight));
+	// Font Height
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Font Width
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->FntDef.lfHeight));
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&(cfg->FntDef.lfWidth));
+	// Font Width
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Char Widths
-	   for(Index=0;Index!=256;++Index)
-	    {
-	      while(data[datptr]!=',')
-	       ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &(cfg->FntDef.lfWidth));
 
-	     datptr++;
-	     sscanf(&data[datptr],"%d",&Val);
-	     cfg->width[Index]=Val;  // Prevents stack damage
-	    }
+	// Char Widths
+	for (Index = 0; Index != 256; ++Index)
+	{
+		while (data[datptr] != ',')
+		{
+			++datptr;
+		}
 
-	  // Char X Offsets
-	   for(Index=0;Index!=256;++Index)
-	    {
-	      while(data[datptr]!=',')
-	       ++datptr;
+		datptr++;
+		sscanf(&data[datptr], "%d", &Val);
+		cfg->width[Index] = Val; // Prevents stack damage
+	}
 
-	     datptr++;
-	     sscanf(&data[datptr],"%d",&Val);
-	     cfg->hAdj[Index]=Val;
-	    }
+	// Char X Offsets
+	for (Index = 0; Index != 256; ++Index)
+	{
+		while (data[datptr] != ',')
+		{
+			++datptr;
+		}
 
-	  // Char Y Offsets
-	   for(Index=0;Index!=256;++Index)
-	    {
-	      while(data[datptr]!=',')
-	       ++datptr;
+		datptr++;
+		sscanf(&data[datptr], "%d", &Val);
+		cfg->hAdj[Index] = Val;
+	}
 
-	     datptr++;
-	     sscanf(&data[datptr],"%d",&Val);
-	     cfg->vAdj[Index]=Val;
-	    }
+	// Char Y Offsets
+	for (Index = 0; Index != 256; ++Index)
+	{
+		while (data[datptr] != ',')
+		{
+			++datptr;
+		}
 
-	  // Global Width Offset
-	   while(data[datptr]!=',')
-	    ++datptr;
+		datptr++;
+		sscanf(&data[datptr], "%d", &Val);
+		cfg->vAdj[Index] = Val;
+	}
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->gwAdj=Val;
+	// Global Width Offset
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Global X Offset
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->gwAdj = Val;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->ghAdj=Val;
+	// Global X Offset
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Global Y Offset
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->ghAdj = Val;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->gvAdj=Val;
+	// Global Y Offset
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Bold Value
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->gvAdj = Val;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->FntDef.lfWeight=Val;
+	// Bold Value
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // Italic Value
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->FntDef.lfWeight = Val;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->FntDef.lfItalic=Val;
+	// Italic Value
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  // AntiAlias Value
-	   while(data[datptr]!=',')
-	    ++datptr;
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->FntDef.lfItalic = Val;
 
-	  datptr++;
-	  sscanf(&data[datptr],"%d",&Val);
-	  cfg->FntDef.lfQuality=Val;
+	// AntiAlias Value
+	while (data[datptr] != ',')
+	{
+		++datptr;
+	}
 
-	  delete [] data;*/
+	datptr++;
+	sscanf(&data[datptr], "%d", &Val);
+	cfg->FntDef.lfQuality = Val;
+
+	delete[] data;
+#endif
 
 	return TRUE;
 }
 
 bool BFontMap::ExportCSVData(char *fname)
 {
-	ofstream out;
+	std::ofstream out;
 	int Loop;
 
-	out.open(fname, ios::out | ios::trunc);
+	out.open(fname, std::ios::out | std::ios::trunc);
 	if (out.fail())
 	{
 		return false;
@@ -1257,26 +1296,26 @@ bool BFontMap::ExportCSVData(char *fname)
 
 bool BFontMap::ExportBinData(char *fname)
 {
-	ofstream out;
+	std::ofstream out;
 	int Loop;
-	unsigned char eWidth[256];
+	int eWidth[256];
 
-	out.open(fname, ios::binary | ios::trunc);
+	out.open(fname, std::ios::binary | std::ios::trunc);
 	if (out.fail())
 	{
 		return false;
 	}
 
 	// Image dims
-	out.write((char *)&MapWidth, sizeof(int));
-	out.write((char *)&MapHeight, sizeof(int));
+	out.write((const char *)&MapWidth, sizeof(int));
+	out.write((const char *)&MapHeight, sizeof(int));
 
 	// Cell dims
-	out.write((char *)&CellWidth, sizeof(int));
-	out.write((char *)&CellHeight, sizeof(int));
+	out.write((const char *)&CellWidth, sizeof(int));
+	out.write((const char *)&CellHeight, sizeof(int));
 
 	// Start char
-	out.write((char *)&BaseChar, 1);
+	out.write((const char *)&BaseChar, 1);
 
 	// Font Widths
 	for (Loop = 0; Loop != 256; ++Loop)
@@ -1284,7 +1323,7 @@ bool BFontMap::ExportBinData(char *fname)
 		eWidth[Loop] = BaseWidth[Loop] + WidthMod[Loop] + gWidthMod;
 	}
 
-	out.write((char *)eWidth, 256);
+	out.write((const char *)eWidth, 256);
 
 	out.close();
 

@@ -49,7 +49,7 @@
 
 typedef struct
 {
-	unsigned char Red, Green, Blue;
+	int Red, Green, Blue;
 } BFG_RGB;
 
 typedef struct

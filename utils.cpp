@@ -7,8 +7,6 @@ extern HWND hMain;
 extern BFontMap *Fnt;
 extern AppInfo *info;
 
-using namespace std;
-
 BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue)
 {
 	BFG_RGB Pack;
@@ -247,7 +245,7 @@ void CalcScroll()
 
 BOOL CheckOverwrite(char *fname)
 {
-	ifstream testfile;
+	std::ifstream testfile;
 
 	testfile.open(fname);
 
@@ -325,7 +323,7 @@ int SBM_Image::Load(char *filename)
 {
 	bool MyStrCmp(const char *Str1, const char *Str2);
 
-	ifstream In;
+	std::ifstream In;
 	char *StrPtr;
 	int RetVal;
 
@@ -335,7 +333,7 @@ int SBM_Image::Load(char *filename)
 	FreeMem((void **)&FileData);
 
 	// Open the specified file
-	In.open(filename, ios::binary);
+	In.open(filename, std::ios::binary);
 
 	if (!In)
 	{
@@ -343,9 +341,9 @@ int SBM_Image::Load(char *filename)
 	}
 
 	// Get file size
-	In.seekg(0, ios_base::end);
-	FileSize = In.tellg();
-	In.seekg(0, ios_base::beg);
+	In.seekg(0, std::ios_base::end);
+	FileSize = (unsigned long)In.tellg();
+	In.seekg(0, std::ios_base::beg);
 
 	// Allocate some space
 	FileData = new unsigned char[FileSize];
@@ -657,7 +655,7 @@ int SBM_Image::LoadBMPPalette()
 
 int SBM_Image::SaveBMP(char *fname)
 {
-	ofstream out;
+	std::ofstream out;
 	int Res = SBM_ERR_UNSUPPORTED;
 	DWORD Data;
 	WORD wData;
@@ -665,7 +663,7 @@ int SBM_Image::SaveBMP(char *fname)
 	switch (BPP)
 	{
 	case 24:
-		out.open(fname, ios::binary | ios::trunc);
+		out.open(fname, std::ios::binary | std::ios::trunc);
 		if (out.fail())
 		{
 			Res = SBM_ERR_NO_FILE;
@@ -704,7 +702,7 @@ int SBM_Image::SaveBMP(char *fname)
 		out.write((char *)&wData, 2);
 
 		// Write BPP
-		wData = BPP;
+		wData = (WORD)BPP;
 		out.write((char *)&wData, 2);
 
 		// Write Compression
@@ -950,6 +948,8 @@ int SBM_Image::LoadPCXPalette()
 
 int SBM_Image::SavePCX(char *fname)
 {
+	UNREFERENCED_PARAMETER(fname);
+
 	return SBM_ERR_UNSUPPORTED;
 }
 
@@ -1179,7 +1179,7 @@ int SBM_Image::LoadTGARawData()
 
 int SBM_Image::LoadTGARLEData()
 {
-	short iOffset, iPixelSize;
+	int iOffset, iPixelSize;
 	unsigned char *pCur;
 	unsigned long Index = 0;
 	unsigned char bLength, bLoop;
@@ -1273,14 +1273,14 @@ int SBM_Image::LoadTGAPalette()
 
 int SBM_Image::SaveTGA(char *filename)
 {
-	ofstream out;
+	std::ofstream out;
 
 	switch (BPP)
 	{
 	case 24:
 	case 32:
 		// Open output file
-		out.open(filename, ios::binary | ios::trunc);
+		out.open(filename, std::ios::binary | std::ios::trunc);
 
 		if (out.fail())
 		{
@@ -1299,7 +1299,7 @@ int SBM_Image::SaveTGA(char *filename)
 		out.put(0);
 
 		// Write BPP into PalInfo
-		out.write(&BPP, 1);
+		out.write((const char *)&BPP, 1);
 
 		// Write zeros into Img Start co-ords
 		out.put(0);
@@ -1334,10 +1334,10 @@ int SBM_Image::SaveTGA(char *filename)
 
 int SBM_Image::SaveRaw(char *filename)
 {
-	ofstream out;
+	std::ofstream out;
 
 	// Open output file
-	out.open(filename, ios::binary | ios::trunc);
+	out.open(filename, std::ios::binary | std::ios::trunc);
 
 	if (out.fail())
 	{
@@ -1393,7 +1393,7 @@ void SBM_Image::BGRtoRGB()
 	unsigned long Index, nPixels;
 	unsigned char *bCur;
 	unsigned char bTemp;
-	short iPixelSize;
+	int iPixelSize;
 
 	// Set ptr to start of image
 	bCur = ImgData;
@@ -1493,7 +1493,7 @@ int SBM_Image::Grayscale()
 			AlphaVal = ImgData[ImgPtr] * 0.3f;
 			AlphaVal += ImgData[ImgPtr + 1] * 0.59f;
 			AlphaVal += ImgData[ImgPtr + 2] * 0.11f;
-			NewData[AlphaPtr] = (int)AlphaVal;
+			NewData[AlphaPtr] = (unsigned char)AlphaVal;
 		}
 
 		delete [] ImgData;
