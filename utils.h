@@ -60,7 +60,6 @@ public:
 	~SBM_Image();
 	int Create(int width, int height, int bpp);
 	void Reset();                  // Clear Image
-	int Load(char *filename);      // Load BMP,PCX,TGA or SBM image
 	int GetBPP();
 	int GetWidth();
 	int GetHeight();
@@ -89,25 +88,6 @@ private:
 	unsigned long FileSize, ImageSize, Offset;
 	unsigned char *ImgData, *PalData, *FileData;
 	short BPL;
-
-	int LoadBMP();
-	int ReadBMPHeader();
-	int LoadBMPRawData();
-	int LoadBMPRLE8Data();
-	int LoadBMPPalette();
-
-	int LoadPCX();
-	int ReadPCXHeader();
-	int LoadPCXRLEData();
-	int LoadPCXPalette();
-
-	int LoadTGA();
-	int ReadTGAHeader();
-	int LoadTGARawData();
-	int LoadTGARLEData();
-	int LoadTGAPalette();
-
-	int LoadSBM();
 
 	void FreeMem(void **Ptr); // Safe delete []
 };
