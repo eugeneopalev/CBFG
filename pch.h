@@ -6,7 +6,6 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
-#include <winsock.h>
 
 #include <gl\gl.h>
 
