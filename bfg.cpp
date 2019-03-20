@@ -901,16 +901,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lstrcpy(Text, "ExportedFont.bmp");
 			if (GetTargetName(Text, "Export BMP", "Bitmap Images (BMP)\0*.bmp\0All Files\0*.*\0\0", "bmp"))
 			{
-				if (CheckOverwrite(Text))
+				if (Fnt->ExportMap(Text, EXPORT_BMP) != SBM_OK)
 				{
-					if (Fnt->ExportMap(Text, EXPORT_BMP) == SBM_OK)
-					{
-						MessageBox(hDlg, "Export Complete", "BMP Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
 				}
 			}
 			return TRUE;
@@ -919,16 +912,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lstrcpy(Text, "ExportedFont.tga");
 			if (GetTargetName(Text, "Export TGA", "Targa Images (TGA)\0*.tga\0All Files\0*.*\0\0", "tga"))
 			{
-				if (CheckOverwrite(Text))
+				if (Fnt->ExportMap(Text, EXPORT_TGA) != SBM_OK)
 				{
-					if (Fnt->ExportMap(Text, EXPORT_TGA) == SBM_OK)
-					{
-						MessageBox(hDlg, "Export Complete", "TGA Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
 				}
 			}
 			return TRUE;
@@ -937,16 +923,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lstrcpy(Text, "ExportedFont.tga");
 			if (GetTargetName(Text, "Export TGA", "Targa Images (TGA)\0*.tga\0All Files\0*.*\0\0", "tga"))
 			{
-				if (CheckOverwrite(Text))
+				if (Fnt->ExportMap(Text, EXPORT_TGA32) != SBM_OK)
 				{
-					if (Fnt->ExportMap(Text, EXPORT_TGA32) == SBM_OK)
-					{
-						MessageBox(hDlg, "Export Complete", "TGA Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
 				}
 			}
 			return TRUE;
@@ -955,16 +934,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lstrcpy(Text, "ExportedFont.png");
 			if (GetTargetName(Text, "Export PNG", "Portable Network Graphics Images (PNG)\0*.png\0All Files\0*.*\0\0", "png"))
 			{
-				if (CheckOverwrite(Text))
+				if (Fnt->ExportMap(Text, EXPORT_PNG) != SBM_OK)
 				{
-					if (Fnt->ExportMap(Text, EXPORT_PNG) == SBM_OK)
-					{
-						MessageBox(hDlg, "Export Complete", "TGA Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
 				}
 			}
 			return TRUE;
@@ -973,16 +945,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lstrcpy(Text, "FontData.csv");
 			if (GetTargetName(Text, "Export Font Data", "Comma Separated Values (CSV)\0*.csv\0All Files\0*.*\0\0", "csv"))
 			{
-				if (CheckOverwrite(Text))
+				if (!Fnt->SaveFont(SAVE_CSV, Text))
 				{
-					if (Fnt->SaveFont(SAVE_CSV, Text))
-					{
-						MessageBox(hDlg, "Export Complete", "Font Data Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
 				}
 			}
 			return TRUE;

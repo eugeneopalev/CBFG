@@ -242,21 +242,3 @@ void CalcScroll()
 		info->vScroll = FALSE;
 	}
 }
-
-BOOL CheckOverwrite(char *fname)
-{
-	std::ifstream testfile;
-
-	testfile.open(fname);
-
-	if (!testfile.fail())
-	{
-		testfile.close();
-		if (MessageBox(hMain, "Overwrite existing file?", "Filename already exists", MB_YESNO | MB_ICONQUESTION) == IDNO)
-		{
-			return FALSE;
-		}
-	}
-
-	return TRUE;
-}

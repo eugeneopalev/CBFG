@@ -5,7 +5,6 @@ extern HWND hMain;
 
 BOOL GetSourceName(char *fname, const char *title, const char *filter, const char *DefExt)
 {
-	BOOL res;
 	OPENFILENAME fileopeninfo;
 	fname[0] = NULL;
 
@@ -22,18 +21,16 @@ BOOL GetSourceName(char *fname, const char *title, const char *filter, const cha
 	fileopeninfo.nMaxFileTitle = 0;
 	fileopeninfo.lpstrInitialDir = NULL;
 	fileopeninfo.lpstrTitle = title;
-	fileopeninfo.Flags = OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
+	fileopeninfo.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
 	fileopeninfo.nFileOffset = 0;
 	fileopeninfo.nFileExtension = 0;
 	fileopeninfo.lpstrDefExt = DefExt;
 
-	res = GetOpenFileName(&fileopeninfo);
-	return res;
+	return GetOpenFileName(&fileopeninfo);
 }
 
 BOOL GetTargetName(char *fname, const char *Title, const char *filter, const char *DefExt)
 {
-	BOOL res;
 	OPENFILENAME fileopeninfo;
 
 	fileopeninfo.lStructSize = sizeof(OPENFILENAME);
@@ -49,11 +46,10 @@ BOOL GetTargetName(char *fname, const char *Title, const char *filter, const cha
 	fileopeninfo.nMaxFileTitle = 0;
 	fileopeninfo.lpstrInitialDir = NULL;
 	fileopeninfo.lpstrTitle = Title;
-	fileopeninfo.Flags = OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
+	fileopeninfo.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
 	fileopeninfo.nFileOffset = 0;
 	fileopeninfo.nFileExtension = 0;
 	fileopeninfo.lpstrDefExt = DefExt;
 
-	res = GetSaveFileName(&fileopeninfo);
-	return res;
+	return GetSaveFileName(&fileopeninfo);
 }
