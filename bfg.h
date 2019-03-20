@@ -1,5 +1,5 @@
-#ifndef CBFG_H
-#define CBFG_H
+#ifndef BFG_H
+#define BFG_H
 
 BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 

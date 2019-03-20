@@ -44,7 +44,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cbfg.cpp">
+    <ClCompile Include="bfg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="config.cpp">
@@ -88,7 +88,7 @@
     <ClInclude Include="defs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cbfg.h">
+    <ClInclude Include="bfg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="preview.h">
@@ -105,7 +105,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="CBFG.rc">
+    <ResourceCompile Include="bfg.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
