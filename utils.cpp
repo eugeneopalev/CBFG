@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "stdio.h"
 #include "font.h"
 #include "utils.h"
 #include "resource.h"

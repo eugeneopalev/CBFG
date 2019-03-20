@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "defs.h"
 #include "font.h"
 #include "utils.h"
 #include "resource.h"
@@ -54,7 +53,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		// Init random text string
 		if (!lstrlen(PText))
 		{
-			srand((unsigned)time(NULL));
+			srand((unsigned int)time(NULL));
 			offset = rand() % 13;
 			lstrcpy(PText, &Sample[offset][0]);
 		}

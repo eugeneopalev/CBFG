@@ -1441,8 +1441,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	AppInfo AppInf;
 	BFontMap Bf;
 
-	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF);
-
 	AppInf.hScr = 0;
 	AppInf.vScr = 0;
 	AppInf.Zoom = 1.0f;
@@ -1490,6 +1488,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 			DispatchMessage(&msg);
 		}
 	}
-	_CrtCheckMemory();
+
 	return 0;
 }

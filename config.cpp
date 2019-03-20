@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "defs.h"
 #include "font.h"
+#include "utils.h"
 #include "resource.h"
 
 extern HINSTANCE G_Inst;

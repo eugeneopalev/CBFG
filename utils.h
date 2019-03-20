@@ -1,9 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "utils.h"
-#include "font.h"
-
 #define EXPORT_TGA   1
 #define EXPORT_BMP   2
 #define EXPORT_TXT   3
@@ -56,8 +53,6 @@ BOOL CheckOverwrite(char *fname);
 #define SBM_ERR_BAD_FORMAT  0x8
 #define SBM_ERR_UNSUPPORTED 0x40
 
-#include <fstream>
-#include <memory.h>
 using namespace std;
 
 class SBM_Image

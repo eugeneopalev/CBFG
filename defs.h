@@ -1,6 +1,5 @@
 #ifndef DEFS_H
 #define DEFS_H
-#include "pch.h"
 
 #define APP_VERSION 1.41
 

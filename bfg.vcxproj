@@ -110,7 +110,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="windows.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bfg.rc" />

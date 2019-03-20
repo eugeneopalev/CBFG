@@ -1,9 +1,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include <windows.h>
 #include "defs.h"
-#include "utils.h"
 
 class BFontMap
 {
