@@ -289,6 +289,7 @@ BEGIN
             MENUITEM "Bitmap (BMP)",                ID_EXPORT_BITMAP
             MENUITEM "Targa (TGA)",                 ID_EXPORT_TARGA
             MENUITEM "Targa32 (TGA)",               ID_EXPORT_TARGA32
+            MENUITEM "Portable Network Graphics (PNG)", ID_EXPORT_PORTABLENETWORKGRAPHICS
             MENUITEM "Font Data (CSV)",             ID_EXPORT_FONTDATA
         END
         MENUITEM SEPARATOR

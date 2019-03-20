@@ -2,6 +2,32 @@
 #include "font.h"
 #include "utils.h"
 
+#include "zlib/zlib.h"
+
+static unsigned char *zlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
+{
+	uLong bufSize = compressBound(data_len);
+
+	unsigned char *buf = (unsigned char *)malloc(bufSize);
+	if (buf == NULL)
+	{
+		return NULL;
+	}
+	if (compress2(buf, &bufSize, data, data_len, quality) != Z_OK)
+	{
+		free(buf);
+		return NULL;
+	}
+	*out_len = bufSize;
+
+	return buf;
+}
+
+//#define STBIW_ZLIB_COMPRESS zlib_compress
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
+
 Font::Font()
 {
 	int loop;
@@ -785,19 +811,12 @@ bool Font::SaveFont(int Format, char *fname, int flags)
 
 int Font::ExportMap(char *fname, int fmt)
 {
-	std::ofstream out;
 	HBITMAP *hBMP;
 	FontFileHeader Hdr;
 	DIBSECTION bmInfo;
 	int Result;
 
 	Init_SBM_Image();
-
-	out.open(fname, std::ios::binary | std::ios::trunc);
-	if (out.fail())
-	{
-		return false;
-	}
 
 	// Populate header
 	Hdr.ID1 = 0xBF;
@@ -857,18 +876,21 @@ int Font::ExportMap(char *fname, int fmt)
 	}
 #endif
 
+	FlipImg();
+
 	switch (fmt)
 	{
-	case EXPORT_TGA32:
-		Result = SaveTGA(fname);
+	case EXPORT_BMP:
+		Result = stbi_write_bmp(fname, Width, Height, (BPP / 8), ImgData) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
 	case EXPORT_TGA:
-		Result = SaveTGA(fname);
+	case EXPORT_TGA32:
+		Result = stbi_write_tga(fname, Width, Height, (BPP / 8), ImgData) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
-	case EXPORT_BMP:
-		Result = SaveBMP(fname);
+	case EXPORT_PNG:
+		Result = stbi_write_png(fname, Width, Height, (BPP / 8), ImgData, Width * (BPP / 8)) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
 	default:
@@ -1157,42 +1179,6 @@ bool Font::ExportCSVData(char *fname)
 	return TRUE;
 }
 
-bool Font::ExportBinData(char *fname)
-{
-	std::ofstream out;
-	int Loop;
-	int eWidth[256];
-
-	out.open(fname, std::ios::binary | std::ios::trunc);
-	if (out.fail())
-	{
-		return false;
-	}
-
-	// Image dims
-	out.write((const char *)&MapWidth, sizeof(int));
-	out.write((const char *)&MapHeight, sizeof(int));
-
-	// Cell dims
-	out.write((const char *)&CellWidth, sizeof(int));
-	out.write((const char *)&CellHeight, sizeof(int));
-
-	// Start char
-	out.write((const char *)&BaseChar, 1);
-
-	// Font Widths
-	for (Loop = 0; Loop != 256; ++Loop)
-	{
-		eWidth[Loop] = BaseWidth[Loop] + WidthMod[Loop] + gWidthMod;
-	}
-
-	out.write((const char *)eWidth, 256);
-
-	out.close();
-
-	return TRUE;
-}
-
 bool Font::IsPower(int TestValue)
 {
 	bool Ret = FALSE;
@@ -1282,150 +1268,6 @@ bool MyStrCmp(const char *Str1, const char *Str2) // Case insenstive string comp
 		Str2++;
 	}
 	return 0;
-}
-
-int Font::SaveBMP(char *fname)
-{
-	std::ofstream out;
-	int Res = SBM_ERR_UNSUPPORTED;
-	DWORD Data;
-	WORD wData;
-
-	switch (BPP)
-	{
-	case 24:
-		out.open(fname, std::ios::binary | std::ios::trunc);
-		if (out.fail())
-		{
-			Res = SBM_ERR_NO_FILE;
-			break;
-		}
-
-		// Write ID
-		out.write("BM", 2);
-
-		// Write filesize
-		Data =/*0x436*/54 + ((Width * Height) * (BPP / 8));
-		out.write((char *)&Data, 4);
-
-		// Write reserved area
-		Data = 0;
-		out.write((char *)&Data, 4);
-
-		// Write offset
-		Data = 0x36;
-		out.write((char *)&Data, 4);
-
-		// Write header size
-		Data = 0x28;
-		out.write((char *)&Data, 4);
-
-		// Write width
-		Data = Width;
-		out.write((char *)&Data, 4);
-
-		// Write height
-		Data = Height;
-		out.write((char *)&Data, 4);
-
-		// Write planes
-		wData = 1;
-		out.write((char *)&wData, 2);
-
-		// Write BPP
-		wData = (WORD)BPP;
-		out.write((char *)&wData, 2);
-
-		// Write Compression
-		Data = 0;
-		out.write((char *)&Data, 4);
-
-		// Write data size
-		Data = (Width * Height) * (BPP / 8);
-		out.write((char *)&Data, 4);
-
-		// Write Resolutions and Colors
-		Data = 0;
-		out.write((char *)&Data, 4);
-		out.write((char *)&Data, 4);
-		out.write((char *)&Data, 4);
-		out.write((char *)&Data, 4);
-
-		// Write image data
-		out.write((char *)ImgData, (Width * Height) * (BPP / 8));
-
-		out.close();
-
-		Res = SBM_OK;
-		break;
-
-	default:
-		Res = SBM_ERR_UNSUPPORTED;
-		break;
-	}
-
-	return Res;
-}
-
-int Font::SaveTGA(char *filename)
-{
-	std::ofstream out;
-
-	switch (BPP)
-	{
-	case 24:
-	case 32:
-		// Open output file
-		out.open(filename, std::ios::binary | std::ios::trunc);
-
-		if (out.fail())
-		{
-			return SBM_ERR_NO_FILE;
-		}
-
-		// Write ID,PalType and ImgType
-		out.put(0);
-		out.put(0);
-		out.put(2);
-
-		// Write zeros into PalInfo area
-		out.put(0);
-		out.put(0);
-		out.put(0);
-		out.put(0);
-
-		// Write BPP into PalInfo
-		out.write((const char *)&BPP, 1);
-
-		// Write zeros into Img Start co-ords
-		out.put(0);
-		out.put(0);
-		out.put(0);
-		out.put(0);
-
-		// Write Width, Height and BPP
-		out.write((char *)&Width, 2);
-		out.write((char *)&Height, 2);
-		out.write((char *)&BPP, 1);
-
-		// Write descriptor
-		out.put(0);
-
-		// Write Image data
-		out.write((char *)ImgData, ((Width * Height) * (BPP / 8)));
-
-		// Write Footer
-		out.write("\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0", 26);
-
-		// Close file
-		out.close();
-		break;
-
-	default:
-		return SBM_ERR_UNSUPPORTED;
-	}
-
-	return SBM_OK;
 }
 
 void Font::FreeMem(void **Ptr)
@@ -1588,8 +1430,7 @@ int Font::InvertCol()
 	return SBM_OK;
 }
 
-int Font::Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
-                        unsigned char SatR, unsigned char SatG, unsigned char SatB)
+int Font::Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB, unsigned char SatR, unsigned char SatG, unsigned char SatB)
 {
 	long Loop, PixCount;
 

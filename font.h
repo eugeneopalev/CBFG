@@ -68,11 +68,7 @@ public:
 	void BGRtoRGB();  // Convert between RGB and BGR formats
 
 	// Sets all non-KeyCol pixels to SatCol
-	int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
-	             unsigned char SatR, unsigned char SatG, unsigned char SatB);
-
-	int SaveBMP(char *filename);
-	int SaveTGA(char *filename);
+	int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB, unsigned char SatR, unsigned char SatG, unsigned char SatB);
 
 private:
 	LOGFONT FntDef;
@@ -88,9 +84,7 @@ private:
 	BFG_RGB BkCol, TextCol, GridCol, WidthCol, SelCol;
 
 	bool IsPower(int TestVal);
-	bool SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat);
 	bool ExportCSVData(char *fname);
-	bool ExportBinData(char *fname);
 
 	// SBM_Image stuff
 	int Width, Height;

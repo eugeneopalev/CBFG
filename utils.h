@@ -5,6 +5,7 @@
 #define EXPORT_BMP   2
 #define EXPORT_TXT   3
 #define EXPORT_TGA32 4
+#define EXPORT_PNG   5
 
 typedef struct
 {

@@ -135,21 +135,19 @@
 #define ID_FILE_IMPORT                  40035
 #define ID_IMPORT_FONTDATA              40036
 #define ID_TOOLS_PREVIEW                40040
-#define ID_SAVE_BFF8                    40042
-#define ID_SAVE_BFF24                   40043
-#define ID_SAVE_BFF32                   40044
 #define ID_HELP_CHECKFORUPDATES         40046
 #define ID_FONT_COLOUR                  40047
 #define ID_COLOUR_SETTEXTCOLOUR         40048
 #define ID_COLOUR_SETBACKGROUNDCOLOUR   40049
+#define ID_EXPORT_PORTABLENETWORKGRAPHICS 40050
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        121
-#define _APS_NEXT_COMMAND_VALUE         40050
+#define _APS_NEXT_COMMAND_VALUE         40051
 #define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

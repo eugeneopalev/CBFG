@@ -951,6 +951,24 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 			return TRUE;
 
+		case ID_EXPORT_PORTABLENETWORKGRAPHICS:
+			lstrcpy(Text, "ExportedFont.png");
+			if (GetTargetName(Text, "Export PNG", "Portable Network Graphics Images (PNG)\0*.png\0All Files\0*.*\0\0", "png"))
+			{
+				if (CheckOverwrite(Text))
+				{
+					if (Fnt->ExportMap(Text, EXPORT_PNG) == SBM_OK)
+					{
+						MessageBox(hDlg, "Export Complete", "TGA Export", MB_OK);
+					}
+					else
+					{
+						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
+					}
+				}
+			}
+			return TRUE;
+
 		case ID_EXPORT_FONTDATA:
 			lstrcpy(Text, "FontData.csv");
 			if (GetTargetName(Text, "Export Font Data", "Comma Separated Values (CSV)\0*.csv\0All Files\0*.*\0\0", "csv"))
