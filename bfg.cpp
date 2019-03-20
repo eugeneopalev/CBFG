@@ -17,6 +17,10 @@ extern bool cfgChange;
 
 int CALLBACK EnumFontMgr(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, int FontType, LPARAM lParam)
 {
+	UNREFERENCED_PARAMETER(lpntme);
+	UNREFERENCED_PARAMETER(FontType);
+	UNREFERENCED_PARAMETER(lParam);
+
 	SendDlgItemMessage(hMain, CBO_FONTS, CB_ADDSTRING, 0, (LPARAM)lpelfe->elfFullName);
 	return 1;
 }
@@ -80,9 +84,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	LOGFONT fDef;
 	char Text[256];
 	int RowDex, Index;
-	int tVal, BPPVal, Flags, RetVal;
+	int tVal, BPPVal, Flags, RetVal = 0;
 	SCROLLINFO scrInf;
-	string VerData, VerNum;
+	std::string VerData, VerNum;
 	RECT rcArea;
 	HBRUSH hBr;
 	BFG_RGB ColVal;
@@ -92,7 +96,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(G_Inst, MAKEINTRESOURCE(MAKEINTRESOURCE(APP_ICON))));
+		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(G_Inst, MAKEINTRESOURCE(APP_ICON)));
 		SendDlgItemMessage(hDlg, CMD_UP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(G_Inst, MAKEINTRESOURCE(ICO_UP)));
 		SendDlgItemMessage(hDlg, CMD_DOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(G_Inst, MAKEINTRESOURCE(ICO_DOWN)));
 		SendDlgItemMessage(hDlg, CMD_RIGHT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(G_Inst, MAKEINTRESOURCE(ICO_RIGHT)));
@@ -899,7 +903,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					// Set font face
 					wsprintf(Text, "%d", Fnt->GetFontName());
-					Index = SendDlgItemMessage(hMain, CBO_FONTS, CB_FINDSTRING, -1, (LPARAM)Text);
+					Index = SendDlgItemMessage(hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
 
 					// Set Start Char
 					wsprintf(Text, "%d", Fnt->GetBaseChar());
@@ -1440,6 +1444,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	G_Inst = hInstance;
 	AppInfo AppInf;
 	BFontMap Bf;
+
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nCmdShow);
 
 	AppInf.hScr = 0;
 	AppInf.vScr = 0;

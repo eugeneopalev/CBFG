@@ -6,6 +6,8 @@ BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	static int BPP, Flags;
 
+	UNREFERENCED_PARAMETER(lParam);
+
 	switch (msg)
 	{
 	case WM_INITDIALOG:

@@ -53,8 +53,6 @@ BOOL CheckOverwrite(char *fname);
 #define SBM_ERR_BAD_FORMAT  0x8
 #define SBM_ERR_UNSUPPORTED 0x40
 
-using namespace std;
-
 class SBM_Image
 {
 public:
@@ -86,8 +84,8 @@ public:
 	int SaveRaw(char *filename);
 
 private:
-	short Width, Height;
-	char BPP, Encode, Planes;
+	int Width, Height;
+	int BPP, Encode, Planes;
 	unsigned long FileSize, ImageSize, Offset;
 	unsigned char *ImgData, *PalData, *FileData;
 	short BPL;

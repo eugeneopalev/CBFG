@@ -12,10 +12,10 @@ public:
 	int  SetSize(int Which, int NewSize);
 	unsigned char GetBaseChar();
 	unsigned char SetBaseChar(int);
-	char GetGlobal(int Which);
-	char SetGlobal(int Which, char NewVal);
-	char GetCharVal(int Char, int Which);
-	char SetCharVal(int Char, int Which, char NewVal);
+	int GetGlobal(int Which);
+	int SetGlobal(int Which, int NewVal);
+	int GetCharVal(int Char, int Which);
+	int SetCharVal(int Char, int Which, int NewVal);
 	long GetFontHeight();
 	long SetFontHeight(long);
 	long GetFontWidth();
@@ -49,11 +49,11 @@ private:
 	int  MapWidth, MapHeight;
 	int  CellHeight, CellWidth;
 	unsigned char BaseChar;
-	unsigned char BaseWidth[256];
-	char WidthMod[256];
-	char VMod[256];
-	char HMod[256];
-	char gWidthMod, gHMod, gVMod;
+	int BaseWidth[256];
+	int WidthMod[256];
+	int VMod[256];
+	int HMod[256];
+	int gWidthMod, gHMod, gVMod;
 	BFG_RGB BkCol, TextCol, GridCol, WidthCol, SelCol;
 
 	bool IsPower(int TestVal);
