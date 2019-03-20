@@ -2,7 +2,7 @@
 #include "font.h"
 #include "utils.h"
 
-BFontMap::BFontMap()
+Font::Font()
 {
 	int loop;
 
@@ -61,12 +61,12 @@ BFontMap::BFontMap()
 	SelCol.Blue = 0;
 }
 
-BFontMap::~BFontMap()
+Font::~Font()
 {
 	DeleteObject(fnt);
 }
 
-int BFontMap::SetSize(int Which, int NewSize)
+int Font::SetSize(int Which, int NewSize)
 {
 	switch (Which)
 	{
@@ -124,7 +124,7 @@ int BFontMap::SetSize(int Which, int NewSize)
 	return 0;
 }
 
-int BFontMap::GetSize(int Which)
+int Font::GetSize(int Which)
 {
 	switch (Which)
 	{
@@ -147,7 +147,7 @@ int BFontMap::GetSize(int Which)
 	return 0;
 }
 
-unsigned char BFontMap::SetBaseChar(int NewBase)
+unsigned char Font::SetBaseChar(int NewBase)
 {
 	if (NewBase < 0)
 	{
@@ -162,12 +162,12 @@ unsigned char BFontMap::SetBaseChar(int NewBase)
 	return BaseChar = (unsigned char)NewBase;
 }
 
-unsigned char BFontMap::GetBaseChar()
+unsigned char Font::GetBaseChar()
 {
 	return BaseChar;
 }
 
-int BFontMap::SetGlobal(int Which, int Value)
+int Font::SetGlobal(int Which, int Value)
 {
 	switch (Which)
 	{
@@ -187,7 +187,7 @@ int BFontMap::SetGlobal(int Which, int Value)
 	return Value;
 }
 
-int BFontMap::GetGlobal(int Which)
+int Font::GetGlobal(int Which)
 {
 	switch (Which)
 	{
@@ -204,7 +204,7 @@ int BFontMap::GetGlobal(int Which)
 	return 0;
 }
 
-int BFontMap::SetCharVal(int Char, int Which, int NewVal)
+int Font::SetCharVal(int Char, int Which, int NewVal)
 {
 	switch (Which)
 	{
@@ -224,7 +224,7 @@ int BFontMap::SetCharVal(int Char, int Which, int NewVal)
 	return NewVal;
 }
 
-int BFontMap::GetCharVal(int Char, int Which)
+int Font::GetCharVal(int Char, int Which)
 {
 	switch (Which)
 	{
@@ -246,7 +246,7 @@ int BFontMap::GetCharVal(int Char, int Which)
 	return 0;
 }
 
-long BFontMap::SetFontHeight(long NewHeight)
+long Font::SetFontHeight(long NewHeight)
 {
 	if (NewHeight < 1)
 	{
@@ -261,12 +261,12 @@ long BFontMap::SetFontHeight(long NewHeight)
 	return FntDef.lfHeight;
 }
 
-long BFontMap::GetFontHeight()
+long Font::GetFontHeight()
 {
 	return FntDef.lfHeight;
 }
 
-long BFontMap::SetFontWidth(long NewWidth)
+long Font::SetFontWidth(long NewWidth)
 {
 	if (NewWidth < 0)
 	{
@@ -281,12 +281,12 @@ long BFontMap::SetFontWidth(long NewWidth)
 	return FntDef.lfWidth;
 }
 
-long BFontMap::GetFontWidth()
+long Font::GetFontWidth()
 {
 	return FntDef.lfWidth;
 }
 
-bool BFontMap::SetFontName(char *NewName)
+bool Font::SetFontName(char *NewName)
 {
 	if (lstrcpy(FntDef.lfFaceName, NewName))
 	{
@@ -298,45 +298,45 @@ bool BFontMap::SetFontName(char *NewName)
 	}
 }
 
-char *BFontMap::GetFontName()
+char *Font::GetFontName()
 {
 	return FntDef.lfFaceName;
 }
 
-long BFontMap::SetFontWeight(long NewWeight)
+long Font::SetFontWeight(long NewWeight)
 {
 	FntDef.lfWeight = NewWeight;
 	return FntDef.lfWeight;
 }
 
-long BFontMap::GetFontWeight()
+long Font::GetFontWeight()
 {
 	return FntDef.lfWeight;
 }
 
-long BFontMap::SetFontQuality(long NewQual)
+long Font::SetFontQuality(long NewQual)
 {
 	FntDef.lfQuality = (BYTE)NewQual;
 	return FntDef.lfQuality;
 }
 
-long BFontMap::GetFontQuality()
+long Font::GetFontQuality()
 {
 	return FntDef.lfQuality;
 }
 
-long BFontMap::SetFontItalic(long NewItal)
+long Font::SetFontItalic(long NewItal)
 {
 	FntDef.lfItalic = (BYTE)NewItal;
 	return FntDef.lfItalic;
 }
 
-long BFontMap::GetFontItalic()
+long Font::GetFontItalic()
 {
 	return FntDef.lfItalic;
 }
 
-void BFontMap::SetCol(int Which, BFG_RGB NewCol)
+void Font::SetCol(int Which, BFG_RGB NewCol)
 {
 	BFG_RGB *Tgt;
 
@@ -371,7 +371,7 @@ void BFontMap::SetCol(int Which, BFG_RGB NewCol)
 	Tgt->Blue = NewCol.Blue;
 }
 
-void BFontMap::SetCol(int Which, unsigned char Red, unsigned char Green, unsigned char Blue)
+void Font::SetCol(int Which, unsigned char Red, unsigned char Green, unsigned char Blue)
 {
 	BFG_RGB *Tgt;
 
@@ -406,7 +406,7 @@ void BFontMap::SetCol(int Which, unsigned char Red, unsigned char Green, unsigne
 	Tgt->Blue = Blue;
 }
 
-BFG_RGB BFontMap::GetCol(int Which)
+BFG_RGB Font::GetCol(int Which)
 {
 	switch (Which)
 	{
@@ -434,7 +434,7 @@ BFG_RGB BFontMap::GetCol(int Which)
 	return BkCol; // Default
 }
 
-bool BFontMap::CalcWidths(HDC hdc)
+bool Font::CalcWidths(HDC hdc)
 {
 	BOOL Test;
 	int Letter;
@@ -466,7 +466,7 @@ bool BFontMap::CalcWidths(HDC hdc)
 	return true;
 }
 
-HBITMAP *BFontMap::DrawFontMap(int Flags, int Sel)
+HBITMAP *Font::DrawFontMap(int Flags, int Sel)
 {
 	HDC wDC, mDC;
 	HBITMAP *fDIB;
@@ -644,7 +644,7 @@ HBITMAP *BFontMap::DrawFontMap(int Flags, int Sel)
 	return fDIB;
 }
 
-int BFontMap::LoadConfig(const char *fname)
+int Font::LoadConfig(const char *fname)
 {
 	std::ifstream cfgfile;
 	unsigned long fSize;
@@ -704,7 +704,7 @@ int BFontMap::LoadConfig(const char *fname)
 	return Flags;
 }
 
-bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
+bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 {
 	std::ofstream cfgfile;
 	int tVal, Flags = 0;
@@ -729,7 +729,7 @@ bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 	{
 		Flags |= SHOW_GRID;
 	}
-	if (Width)
+	if (Width_)
 	{
 		Flags |= SHOW_WIDTH;
 	}
@@ -745,7 +745,7 @@ bool BFontMap::SaveConfig(const char *fname, bool Grid, bool Width)
 	return true;
 }
 
-void BFontMap::ResetOffsets()
+void Font::ResetOffsets()
 {
 	int Loop;
 
@@ -759,7 +759,7 @@ void BFontMap::ResetOffsets()
 	gWidthMod = gHMod = gVMod = 0;
 }
 
-bool BFontMap::SaveFont(int Format, char *fname, int flags)
+bool Font::SaveFont(int Format, char *fname, int flags)
 {
 	bool Inv, Sat;
 	Inv = Sat = false;
@@ -776,22 +776,6 @@ bool BFontMap::SaveFont(int Format, char *fname, int flags)
 
 	switch (Format)
 	{
-	case SAVE_BFF8:
-		return SaveBFF2(fname, 8, Inv, false);
-		break;
-
-	case SAVE_BFF24:
-		return SaveBFF2(fname, 24, false, false);
-		break;
-
-	case SAVE_BFF32:
-		return SaveBFF2(fname, 32, Inv, Sat);
-		break;
-
-	case SAVE_BIN:
-		return ExportBinData(fname);
-		break;
-
 	case SAVE_CSV:
 		return ExportCSVData(fname);
 	}
@@ -799,140 +783,15 @@ bool BFontMap::SaveFont(int Format, char *fname, int flags)
 	return false;
 }
 
-bool BFontMap::SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat)
+int Font::ExportMap(char *fname, int fmt)
 {
 	std::ofstream out;
 	HBITMAP *hBMP;
 	FontFileHeader Hdr;
 	DIBSECTION bmInfo;
-	SBM_Image FntImg, AlphaImg;
-	int Loop;
-	int EffWidth[256];
-
-	out.open(fname, std::ios::binary | std::ios::trunc);
-	if (out.fail())
-	{
-		return false;
-	}
-
-	// Populate header
-	Hdr.ID1 = 0xBF;
-	Hdr.ID2 = 0xF2;
-	Hdr.BPP = 24;
-	Hdr.ImageWidth = MapWidth;
-	Hdr.ImageHeight = MapHeight;
-	Hdr.CellWidth = CellWidth;
-	Hdr.CellHeight = CellHeight;
-	Hdr.StartPoint = BaseChar;
-
-	// Create the SBM image
-	FntImg.Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
-
-	// Render the font image
-	if (OutputBPP == 8)
-	{
-		hBMP = DrawFontMap(DFM_ALPHA, -1);
-	}
-	else
-	{
-		hBMP = DrawFontMap(0, -1);
-	}
-
-	// Grab the bitmap information
-	if (!GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo))
-	{
-		return FALSE;
-	}
-
-	// Copy bitmap to SBM
-	memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
-
-	// Flip memory bitmap BGR to BFF RGB
-	FntImg.BGRtoRGB();
-
-	// Free the bitmap
-	delete hBMP;
-
-	// Add in alpha channel if required
-	if (OutputBPP == 32)
-	{
-		// Render new alpha fontmap
-		hBMP = DrawFontMap(DFM_ALPHA, -1);
-
-		// Create the SBM alpha image
-		AlphaImg.Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
-
-		// Get RGB data ptr from Img
-		if (!GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo))
-		{
-			return FALSE;
-		}
-
-		// Copy bitmap to alpha SBM
-		memcpy(AlphaImg.GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
-
-		// Free the bitmap
-		delete hBMP;
-
-		// Post-process images and insert alpha channel into font map
-		AlphaImg.Grayscale();
-
-		if (RGBSat)
-		{
-			FntImg.Saturate(0, 0, 0, 255, 255, 255);
-		}
-
-		if (Invert)
-		{
-			AlphaImg.InvertCol();
-		}
-
-		FntImg.InsertAlpha(AlphaImg.GetImg());
-		Hdr.BPP = 32;
-	}
-
-	if (OutputBPP == 8)
-	{
-		FntImg.Grayscale();
-
-		if (Invert)
-		{
-			FntImg.InvertCol();
-		}
-
-		Hdr.BPP = 8;
-	}
-
-	// Invert image
-	FntImg.FlipImg();
-
-	// Write header data
-	out.write((const char *)&Hdr, sizeof(Hdr));
-
-	// Write char widths
-	for (Loop = 0; Loop != 256; ++Loop)
-	{
-		EffWidth[Loop] = BaseWidth[Loop] + WidthMod[Loop] + gWidthMod;
-	}
-
-	out.write((const char *)EffWidth, 256);
-
-	// Write bitmap
-	out.write((const char *)FntImg.GetImg(), (Hdr.ImageWidth * Hdr.ImageHeight) * (OutputBPP / 8));
-
-	out.close();
-
-	return true;
-}
-
-int BFontMap::ExportMap(char *fname, int fmt)
-{
-	std::ofstream out;
-	HBITMAP *hBMP;
-	FontFileHeader Hdr;
-	DIBSECTION bmInfo;
-	SBM_Image FntImg, AlphaImg;
 	int Result;
+
+	Init_SBM_Image();
 
 	out.open(fname, std::ios::binary | std::ios::trunc);
 	if (out.fail())
@@ -951,7 +810,7 @@ int BFontMap::ExportMap(char *fname, int fmt)
 	Hdr.StartPoint = BaseChar;
 
 	// Create the SBM image
-	FntImg.Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
+	Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
 
 	// Render the font image
 	hBMP = DrawFontMap(0, -1);
@@ -963,11 +822,12 @@ int BFontMap::ExportMap(char *fname, int fmt)
 	}
 
 	// Copy bitmap to SBM
-	memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
+	memcpy(GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
 
 	// Free the bitmap
 	delete hBMP;
 
+#if 0
 	// Add in alpha channel if required
 	if (fmt == EXPORT_TGA32)
 	{
@@ -995,19 +855,20 @@ int BFontMap::ExportMap(char *fname, int fmt)
 		// Insert alpha channel into font map
 		FntImg.InsertAlpha(AlphaImg.GetImg());
 	}
+#endif
 
 	switch (fmt)
 	{
 	case EXPORT_TGA32:
-		Result = FntImg.SaveTGA(fname);
+		Result = SaveTGA(fname);
 		break;
 
 	case EXPORT_TGA:
-		Result = FntImg.SaveTGA(fname);
+		Result = SaveTGA(fname);
 		break;
 
 	case EXPORT_BMP:
-		Result = FntImg.SaveBMP(fname);
+		Result = SaveBMP(fname);
 		break;
 
 	default:
@@ -1015,15 +876,17 @@ int BFontMap::ExportMap(char *fname, int fmt)
 		break;
 	}
 
+	Deinit_SBM_Image();
+
 	return Result;
 }
 
-bool BFontMap::ImportData(char *fname)
+bool Font::ImportData(char *fname)
 {
 	UNREFERENCED_PARAMETER(fname);
 
 #if 0
-	extern BFontMap *Fnt;
+	extern Font *Fnt;
 
 	FILE *in;
 	long fsize, datptr;
@@ -1242,7 +1105,7 @@ bool BFontMap::ImportData(char *fname)
 	return TRUE;
 }
 
-bool BFontMap::ExportCSVData(char *fname)
+bool Font::ExportCSVData(char *fname)
 {
 	std::ofstream out;
 	int Loop;
@@ -1294,7 +1157,7 @@ bool BFontMap::ExportCSVData(char *fname)
 	return TRUE;
 }
 
-bool BFontMap::ExportBinData(char *fname)
+bool Font::ExportBinData(char *fname)
 {
 	std::ofstream out;
 	int Loop;
@@ -1330,7 +1193,7 @@ bool BFontMap::ExportBinData(char *fname)
 	return TRUE;
 }
 
-bool BFontMap::IsPower(int TestValue)
+bool Font::IsPower(int TestValue)
 {
 	bool Ret = FALSE;
 	float Val;
@@ -1348,4 +1211,434 @@ bool BFontMap::IsPower(int TestValue)
 	}
 
 	return Ret;
+}
+
+void Font::Init_SBM_Image()
+{
+	Width = Height = 0;
+	FileSize = ImageSize = 0;
+	BPP = Encode = 0;
+	ImgData = PalData = FileData = NULL;
+}
+
+void Font::Deinit_SBM_Image()
+{
+	FreeMem((void **)&ImgData);
+	FreeMem((void **)&PalData);
+	FreeMem((void **)&FileData);
+}
+
+// Create an empty image with specified size and colour depth
+int Font::Create(int width, int height, int bpp)
+{
+	switch (bpp)
+	{
+	case 24:
+	case 32:
+		FreeMem((void **)&ImgData);
+		FreeMem((void **)&PalData);
+		FreeMem((void **)&FileData);
+
+		ImgData = new unsigned char[(width * height) * (bpp / 8)];
+
+		if (ImgData == NULL)
+		{
+			return SBM_ERR_MEM_FAIL;
+		}
+
+		Width = width;
+		Height = height;
+		BPP = bpp;
+
+		break;
+
+	default:
+		return SBM_ERR_UNSUPPORTED;
+	}
+
+	return SBM_OK;
+}
+
+void Font::Reset()
+{
+	Width = Height = 0;
+	FileSize = ImageSize = 0;
+	BPP = Encode = 0;
+
+	FreeMem((void **)&ImgData);
+	FreeMem((void **)&PalData);
+	FreeMem((void **)&FileData);
+}
+
+bool MyStrCmp(const char *Str1, const char *Str2) // Case insenstive string comparison
+{
+	while ((*Str1 > 96 ? *Str1 - 32 : *Str1) == (*Str2 > 96 ? *Str2 - 32 : *Str2))
+	{
+		if (*Str1 == NULL)
+		{
+			return 1;
+		}
+		Str1++;
+		Str2++;
+	}
+	return 0;
+}
+
+int Font::SaveBMP(char *fname)
+{
+	std::ofstream out;
+	int Res = SBM_ERR_UNSUPPORTED;
+	DWORD Data;
+	WORD wData;
+
+	switch (BPP)
+	{
+	case 24:
+		out.open(fname, std::ios::binary | std::ios::trunc);
+		if (out.fail())
+		{
+			Res = SBM_ERR_NO_FILE;
+			break;
+		}
+
+		// Write ID
+		out.write("BM", 2);
+
+		// Write filesize
+		Data =/*0x436*/54 + ((Width * Height) * (BPP / 8));
+		out.write((char *)&Data, 4);
+
+		// Write reserved area
+		Data = 0;
+		out.write((char *)&Data, 4);
+
+		// Write offset
+		Data = 0x36;
+		out.write((char *)&Data, 4);
+
+		// Write header size
+		Data = 0x28;
+		out.write((char *)&Data, 4);
+
+		// Write width
+		Data = Width;
+		out.write((char *)&Data, 4);
+
+		// Write height
+		Data = Height;
+		out.write((char *)&Data, 4);
+
+		// Write planes
+		wData = 1;
+		out.write((char *)&wData, 2);
+
+		// Write BPP
+		wData = (WORD)BPP;
+		out.write((char *)&wData, 2);
+
+		// Write Compression
+		Data = 0;
+		out.write((char *)&Data, 4);
+
+		// Write data size
+		Data = (Width * Height) * (BPP / 8);
+		out.write((char *)&Data, 4);
+
+		// Write Resolutions and Colors
+		Data = 0;
+		out.write((char *)&Data, 4);
+		out.write((char *)&Data, 4);
+		out.write((char *)&Data, 4);
+		out.write((char *)&Data, 4);
+
+		// Write image data
+		out.write((char *)ImgData, (Width * Height) * (BPP / 8));
+
+		out.close();
+
+		Res = SBM_OK;
+		break;
+
+	default:
+		Res = SBM_ERR_UNSUPPORTED;
+		break;
+	}
+
+	return Res;
+}
+
+int Font::SaveTGA(char *filename)
+{
+	std::ofstream out;
+
+	switch (BPP)
+	{
+	case 24:
+	case 32:
+		// Open output file
+		out.open(filename, std::ios::binary | std::ios::trunc);
+
+		if (out.fail())
+		{
+			return SBM_ERR_NO_FILE;
+		}
+
+		// Write ID,PalType and ImgType
+		out.put(0);
+		out.put(0);
+		out.put(2);
+
+		// Write zeros into PalInfo area
+		out.put(0);
+		out.put(0);
+		out.put(0);
+		out.put(0);
+
+		// Write BPP into PalInfo
+		out.write((const char *)&BPP, 1);
+
+		// Write zeros into Img Start co-ords
+		out.put(0);
+		out.put(0);
+		out.put(0);
+		out.put(0);
+
+		// Write Width, Height and BPP
+		out.write((char *)&Width, 2);
+		out.write((char *)&Height, 2);
+		out.write((char *)&BPP, 1);
+
+		// Write descriptor
+		out.put(0);
+
+		// Write Image data
+		out.write((char *)ImgData, ((Width * Height) * (BPP / 8)));
+
+		// Write Footer
+		out.write("\0\0\0\0\0\0\0\0TRUEVISION-XFILE.\0", 26);
+
+		// Close file
+		out.close();
+		break;
+
+	default:
+		return SBM_ERR_UNSUPPORTED;
+	}
+
+	return SBM_OK;
+}
+
+void Font::FreeMem(void **Ptr)
+{
+	if (*Ptr != NULL)
+	{
+		delete [] *Ptr;
+		*Ptr = NULL;
+	}
+}
+
+void Font::BGRtoRGB()
+{
+	unsigned long Index, nPixels;
+	unsigned char *bCur;
+	unsigned char bTemp;
+	int iPixelSize;
+
+	// Set ptr to start of image
+	bCur = ImgData;
+
+	// Calc number of pixels
+	nPixels = Width * Height;
+
+	// Get pixel size in bytes
+	iPixelSize = BPP / 8;
+
+	for (Index = 0; Index != nPixels; Index++) // For each pixel
+	{
+		bTemp = *bCur;    // Get Blue value
+		*bCur = *(bCur + 2); // Swap red value into first position
+		*(bCur + 2) = bTemp; // Write back blue to last position
+
+		bCur += iPixelSize; // Jump to next pixel
+	}
+}
+
+int Font::InsertAlpha(unsigned char *Alpha)
+{
+	unsigned char *NewImg;
+	int PixLoop;
+	int RGBPtr, ImgPtr;
+
+	if (BPP != 24)
+	{
+		return SBM_ERR_UNSUPPORTED;
+	}
+
+	NewImg = new unsigned char[(Width * Height) * 4];
+
+	if (NewImg == NULL)
+	{
+		return SBM_ERR_MEM_FAIL;
+	}
+
+	for (PixLoop = 0, RGBPtr = 0, ImgPtr = 0; PixLoop != (Width * Height); ++PixLoop)
+	{
+		NewImg[ImgPtr] = ImgData[RGBPtr];
+		NewImg[ImgPtr + 1] = ImgData[RGBPtr + 1];
+		NewImg[ImgPtr + 2] = ImgData[RGBPtr + 2];
+		NewImg[ImgPtr + 3] = Alpha[PixLoop];
+		RGBPtr += 3;
+		ImgPtr += 4;
+	}
+
+	FreeMem((void **)&ImgData);
+	ImgData = NewImg;
+	BPP = 32;
+	ImageSize = ((Width * Height) * (BPP / 8));
+
+	return SBM_OK;
+}
+
+void Font::FlipImg()
+{
+	unsigned char bTemp;
+	unsigned char *pLine1, *pLine2;
+	int iLineLen, iIndex;
+
+	iLineLen = Width * (BPP / 8);
+	pLine1 = ImgData;
+	pLine2 = &ImgData[iLineLen * (Height - 1)];
+
+	for (; pLine1 < pLine2; pLine2 -= (iLineLen * 2))
+	{
+		for (iIndex = 0; iIndex != iLineLen; pLine1++, pLine2++, iIndex++)
+		{
+			bTemp = *pLine1;
+			*pLine1 = *pLine2;
+			*pLine2 = bTemp;
+		}
+	}
+}
+
+int Font::Grayscale()
+{
+	unsigned char *NewData;
+	unsigned long ImgPtr, AlphaPtr;
+	float AlphaVal;
+
+	NewData = new unsigned char[Width * Height];
+
+	if (NewData == NULL)
+	{
+		return SBM_ERR_MEM_FAIL;
+	}
+
+	switch (BPP)
+	{
+	case 24:
+		ImageSize = Width * Height;
+		for (ImgPtr = 0, AlphaPtr = 0; AlphaPtr < ImageSize; AlphaPtr++, ImgPtr += 3)
+		{
+			AlphaVal = ImgData[ImgPtr] * 0.3f;
+			AlphaVal += ImgData[ImgPtr + 1] * 0.59f;
+			AlphaVal += ImgData[ImgPtr + 2] * 0.11f;
+			NewData[AlphaPtr] = (unsigned char)AlphaVal;
+		}
+
+		delete [] ImgData;
+		ImgData = NewData;
+		BPP = 8;
+		break;
+
+	default:
+		delete [] NewData;
+		return SBM_ERR_UNSUPPORTED;
+		break;
+	}
+
+	return SBM_OK;
+}
+
+int Font::InvertCol()
+{
+	unsigned long Loop;
+
+	switch (BPP)
+	{
+	case 8:
+		if (PalData == NULL) // Grayscale image
+		{
+			for (Loop = 0; Loop < ImageSize; ++Loop)
+			{
+				ImgData[Loop] = 255 - ImgData[Loop];
+			}
+		}
+		else
+		{
+			return SBM_ERR_UNSUPPORTED;
+		}
+
+		break;
+
+	default:
+		return SBM_ERR_UNSUPPORTED;
+		break;
+	}
+
+	return SBM_OK;
+}
+
+int Font::Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
+                        unsigned char SatR, unsigned char SatG, unsigned char SatB)
+{
+	long Loop, PixCount;
+
+	PixCount = (Width * Height);
+
+	switch (BPP)
+	{
+	case 24:
+		PixCount *= 3;
+		for (Loop = 0; Loop < PixCount; Loop += 3)
+		{
+			if (ImgData[Loop] != KeyR || ImgData[Loop + 1] != KeyG || ImgData[Loop + 2] != KeyB)
+			{
+				ImgData[Loop] = SatR;
+				ImgData[Loop + 1] = SatG;
+				ImgData[Loop + 2] = SatB;
+			}
+		}
+		break;
+
+	default:
+		return SBM_ERR_UNSUPPORTED;
+		break;
+	}
+
+	return SBM_OK;
+}
+
+int Font::GetBPP()
+{
+	return BPP;
+}
+
+int Font::GetWidth()
+{
+	return Width;
+}
+
+int Font::GetHeight()
+{
+	return Height;
+}
+
+unsigned char *Font::GetImg()
+{
+	return ImgData;
+}
+
+unsigned char *Font::GetPalette()
+{
+	return PalData;
 }

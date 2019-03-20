@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "font.h"
-#include "utils.h"
 #include "resource.h"
 
 GLuint TexName;
@@ -10,7 +9,7 @@ HWND hGL;
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
-extern BFontMap *Fnt;
+extern Font *Fnt;
 extern AppInfo *info;
 
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -22,7 +21,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	unsigned char Text[255];
 	HBITMAP *hBMP;
 	DIBSECTION bmInfo;
-	SBM_Image FntImg;
+	Font FntImg;
 	RECT glRect;
 	BFG_RGB BkCol;
 	LRESULT lTxt;
@@ -31,7 +30,9 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	int pixelformat;
 
 	static char PText[1024];
-	char Sample[13][128] = {{"THE QUICK BROWN FOX JUMPS OVER A LAZY DOG"},
+	char Sample[13][128] =
+	{
+		{"THE QUICK BROWN FOX JUMPS OVER A LAZY DOG"},
 		{"JACKDAWS LOVE MY BIG SPHINX OF QUARTZ"},
 		{"QUICK WAFTING ZEPHYRS VEX BOLD JIM"},
 		{"PACK MY BOX WITH FIVE DOZEN LIQUOR JUGS"},
@@ -105,6 +106,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		// Build Texture
 		hBMP = Fnt->DrawFontMap(FALSE, -1);
 		GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo);
+		FntImg.Init_SBM_Image();
 		FntImg.Create(Fnt->GetSize(MAPWIDTH), Fnt->GetSize(MAPHEIGHT), 24);
 		memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Fnt->GetSize(MAPWIDTH)*Fnt->GetSize(MAPHEIGHT) * 3));
 		FntImg.FlipImg();
@@ -119,6 +121,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		DeleteObject(*hBMP);
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)PText);
+		FntImg.Deinit_SBM_Image();
 		return 0;
 
 	case WM_APP:

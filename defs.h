@@ -35,11 +35,7 @@
 #define BACKCOL  4
 
 // FontSave Constants
-#define SAVE_BFF8  101
-#define SAVE_BFF24 102
-#define SAVE_BFF32 103
 #define SAVE_CSV   110
-#define SAVE_BIN   120
 #define SAVE_BMP   130
 #define SAVE_TGA   140
 #define SAVE_TGA32 141

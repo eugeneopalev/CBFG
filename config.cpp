@@ -6,7 +6,7 @@
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
-extern BFontMap *Fnt;
+extern Font *Fnt;
 extern AppInfo *info;
 
 void SetConfigRGB(HWND Win, BFG_RGB Cols)

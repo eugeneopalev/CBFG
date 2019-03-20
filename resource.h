@@ -131,12 +131,10 @@
 #define ID_TOOLS_IMPORTIMAGE            40028
 #define ID_TOOLS_CONFIGURATION          40030
 #define ID_VIEW_WIDTHMARKERS            40032
-#define ID_FILE_SAVEBFF                 40033
 #define ID_EXPORT_TARGA32               40034
 #define ID_FILE_IMPORT                  40035
 #define ID_IMPORT_FONTDATA              40036
 #define ID_TOOLS_PREVIEW                40040
-#define ID_EXPORT_BIN                   40041
 #define ID_SAVE_BFF8                    40042
 #define ID_SAVE_BFF24                   40043
 #define ID_SAVE_BFF32                   40044

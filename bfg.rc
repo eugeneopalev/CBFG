@@ -284,14 +284,12 @@ BEGIN
     POPUP "File"
     BEGIN
         MENUITEM "New (Reset)",                 ID_FILE_RESET
-        MENUITEM "Save",                        ID_FILE_SAVEBFF
         POPUP "Export"
         BEGIN
             MENUITEM "Bitmap (BMP)",                ID_EXPORT_BITMAP
             MENUITEM "Targa (TGA)",                 ID_EXPORT_TARGA
             MENUITEM "Targa32 (TGA)",               ID_EXPORT_TARGA32
             MENUITEM "Font Data (CSV)",             ID_EXPORT_FONTDATA
-            MENUITEM "Binary Font Data (DAT)",      ID_EXPORT_BIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_FILE_EXIT

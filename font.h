@@ -3,11 +3,17 @@
 
 #include "defs.h"
 
-class BFontMap
+#define SBM_OK              0x1
+#define SBM_ERR_NO_FILE     0x2
+#define SBM_ERR_MEM_FAIL    0x4
+#define SBM_ERR_BAD_FORMAT  0x8
+#define SBM_ERR_UNSUPPORTED 0x40
+
+class Font
 {
 public:
-	BFontMap();
-	~BFontMap();
+	Font();
+	~Font();
 	int  GetSize(int Which);
 	int  SetSize(int Which, int NewSize);
 	unsigned char GetBaseChar();
@@ -32,7 +38,7 @@ public:
 	HBITMAP *DrawFontMap(int Flags, int Sel);
 
 	int  LoadConfig(const char *fname);
-	bool SaveConfig(const char *fname, bool Grid, bool Width);
+	bool SaveConfig(const char *fname, bool Grid, bool Width_);
 	void ResetOffsets();
 
 	bool SaveFont(int Format, char *fname, int Flags = 0);
@@ -42,6 +48,31 @@ public:
 	void SetCol(int Which, BYTE Red, BYTE Green, BYTE Blue);
 	void SetCol(int Which, BFG_RGB Col);
 	BFG_RGB GetCol(int Which);
+
+	// SBM_Image stuff
+	void Init_SBM_Image();
+	void Deinit_SBM_Image();
+	int Create(int width, int height, int bpp);
+	void Reset();                  // Clear Image
+	int GetBPP();
+	int GetWidth();
+	int GetHeight();
+	unsigned char *GetImg();       // Return a pointer to image data
+	unsigned char *GetPalette();   // Return a pointer to VGA palette
+
+	// Utility Functions
+	void FlipImg();   // Invert image vertically
+	int InsertAlpha(unsigned char *Alpha); // Adds an alpha channel to image
+	int Grayscale();  // Converts image to 8 bit gray
+	int InvertCol();  // Inverts colour values
+	void BGRtoRGB();  // Convert between RGB and BGR formats
+
+	// Sets all non-KeyCol pixels to SatCol
+	int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB,
+	             unsigned char SatR, unsigned char SatG, unsigned char SatB);
+
+	int SaveBMP(char *filename);
+	int SaveTGA(char *filename);
 
 private:
 	LOGFONT FntDef;
@@ -60,6 +91,15 @@ private:
 	bool SaveBFF2(char *fname, char OutputBPP, bool Invert, bool RGBSat);
 	bool ExportCSVData(char *fname);
 	bool ExportBinData(char *fname);
+
+	// SBM_Image stuff
+	int Width, Height;
+	int BPP, Encode, Planes;
+	unsigned long FileSize, ImageSize, Offset;
+	unsigned char *ImgData, *PalData, *FileData;
+	short BPL;
+
+	void FreeMem(void **Ptr); // Safe delete []
 };
 
 #endif

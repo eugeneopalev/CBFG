@@ -11,7 +11,7 @@
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
-extern BFontMap *Fnt;
+extern Font *Fnt;
 extern AppInfo *info;
 extern bool cfgChange;
 
@@ -27,7 +27,7 @@ int CALLBACK EnumFontMgr(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, int Fon
 
 extern HINSTANCE G_Inst;
 extern HWND hMain;
-extern BFontMap *Fnt;
+extern Font *Fnt;
 extern AppInfo *info;
 
 BOOL CALLBACK TextWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -83,8 +83,8 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	HDC dc;
 	LOGFONT fDef;
 	char Text[256];
-	int RowDex, Index;
-	int tVal, BPPVal, Flags, RetVal = 0;
+	int RowDex;
+	int tVal, Flags;
 	SCROLLINFO scrInf;
 	std::string VerData, VerNum;
 	RECT rcArea;
@@ -854,47 +854,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			CreateFontMap();
 			return TRUE;
 
-		case ID_FILE_SAVEBFF:
-			lstrcpy(Text, Fnt->GetFontName());
-			lstrcat(Text, ".bff");
-			if (GetTargetName(Text, "Save BFF", "Bitmap Font Files (BFF)\0*.bff\0All Files\0*.*\0\0", "bff"))
-			{
-				if (CheckOverwrite(Text))
-				{
-					tVal = DialogBox(G_Inst, MAKEINTRESOURCE(DLG_SAVEOPT), hMain, SaveOptProc);
-					if (tVal)
-					{
-						// Extract BPP and pre-processing flags from dialog return value
-						BPPVal = tVal & 0x3F;
-
-						switch (BPPVal)
-						{
-						case 8:
-							RetVal = Fnt->SaveFont(SAVE_BFF8, Text, tVal);
-							break;
-
-						case 24:
-							RetVal = Fnt->SaveFont(SAVE_BFF24, Text);
-							break;
-
-						case 32:
-							RetVal = Fnt->SaveFont(SAVE_BFF32, Text, tVal);
-							break;
-						}
-
-						if (RetVal)
-						{
-							MessageBox(hDlg, "Save Complete", "File Operation", MB_OK);
-						}
-						else
-						{
-							MessageBox(hDlg, "Save Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-						}
-					}
-				}
-			}
-			return TRUE;
-
 		case ID_IMPORT_FONTDATA:
 			Text[0] = NULL;
 			if (GetSourceName(Text, "Import Font Data", "Font Data Files (CSV)\0*.csv\0All Files\0*.*\0\0", "csv"))
@@ -903,7 +862,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				{
 					// Set font face
 					wsprintf(Text, "%d", Fnt->GetFontName());
-					Index = SendDlgItemMessage(hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
+					SendDlgItemMessage(hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
 
 					// Set Start Char
 					wsprintf(Text, "%d", Fnt->GetBaseChar());
@@ -1009,25 +968,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			return TRUE;
-
-		case ID_EXPORT_BIN:
-			lstrcpy(Text, "FontData.dat");
-			if (GetTargetName(Text, "Export Binary Font Data", "Binary Font Files (dat)\0*.dat\0All Files\0*.*\0\0", "dat"))
-			{
-				if (CheckOverwrite(Text))
-				{
-					if (Fnt->SaveFont(SAVE_BIN, Text))
-					{
-						MessageBox(hDlg, "Export Complete", "Font Data Export", MB_OK);
-					}
-					else
-					{
-						MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-					}
-				}
-			}
-			return TRUE;
-			break;
 
 		case ID_FILE_EXIT:
 			EndDialog(hDlg, 0);
@@ -1432,7 +1372,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 HWND hMain;
 HWND hText;
 HINSTANCE G_Inst;
-BFontMap *Fnt;
+Font *Fnt;
 AppInfo *info;
 LONG OldProc;
 void Msg(char *text);
@@ -1443,7 +1383,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	int Ret;
 	G_Inst = hInstance;
 	AppInfo AppInf;
-	BFontMap Bf;
+	Font Bf;
 
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
