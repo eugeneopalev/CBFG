@@ -30,8 +30,6 @@ static unsigned char *zlib_compress(unsigned char *data, int data_len, int *out_
 
 Font::Font()
 {
-	int loop;
-
 	BaseChar = 32;
 
 	MapWidth = 256;
@@ -42,7 +40,7 @@ Font::Font()
 	gVMod = 0;
 	gWidthMod = 0;
 
-	for (loop = 0; loop != 256; loop++)
+	for (int loop = 0; loop != 256; loop++)
 	{
 		HMod[loop] = 0;
 		VMod[loop] = 0;
@@ -846,6 +844,8 @@ int Font::ExportMap(char *fname, int fmt)
 	// Free the bitmap
 	delete hBMP;
 
+	FlipImg();
+
 #if 0
 	// Add in alpha channel if required
 	if (fmt == EXPORT_TGA32)
@@ -875,8 +875,6 @@ int Font::ExportMap(char *fname, int fmt)
 		FntImg.InsertAlpha(AlphaImg.GetImg());
 	}
 #endif
-
-	FlipImg();
 
 	switch (fmt)
 	{
@@ -1256,20 +1254,6 @@ void Font::Reset()
 	FreeMem((void **)&FileData);
 }
 
-bool MyStrCmp(const char *Str1, const char *Str2) // Case insenstive string comparison
-{
-	while ((*Str1 > 96 ? *Str1 - 32 : *Str1) == (*Str2 > 96 ? *Str2 - 32 : *Str2))
-	{
-		if (*Str1 == NULL)
-		{
-			return 1;
-		}
-		Str1++;
-		Str2++;
-	}
-	return 0;
-}
-
 void Font::FreeMem(void **Ptr)
 {
 	if (*Ptr != NULL)
@@ -1419,7 +1403,6 @@ int Font::InvertCol()
 		{
 			return SBM_ERR_UNSUPPORTED;
 		}
-
 		break;
 
 	default:
@@ -1459,27 +1442,7 @@ int Font::Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB, u
 	return SBM_OK;
 }
 
-int Font::GetBPP()
-{
-	return BPP;
-}
-
-int Font::GetWidth()
-{
-	return Width;
-}
-
-int Font::GetHeight()
-{
-	return Height;
-}
-
 unsigned char *Font::GetImg()
 {
 	return ImgData;
-}
-
-unsigned char *Font::GetPalette()
-{
-	return PalData;
 }

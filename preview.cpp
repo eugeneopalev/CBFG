@@ -7,10 +7,9 @@ HDC glDC;
 HGLRC glRC;
 HWND hGL;
 
-extern HINSTANCE G_Inst;
-extern HWND hMain;
-extern Font *Fnt;
-extern AppInfo *info;
+extern HINSTANCE g_hInstance;
+extern HWND g_hMain;
+extern Font Fnt;
 
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -104,11 +103,11 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		glEnable(GL_TEXTURE_2D);
 
 		// Build Texture
-		hBMP = Fnt->DrawFontMap(FALSE, -1);
+		hBMP = Fnt.DrawFontMap(FALSE, -1);
 		GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo);
 		FntImg.Init_SBM_Image();
-		FntImg.Create(Fnt->GetSize(MAPWIDTH), Fnt->GetSize(MAPHEIGHT), 24);
-		memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Fnt->GetSize(MAPWIDTH)*Fnt->GetSize(MAPHEIGHT) * 3));
+		FntImg.Create(Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), 24);
+		memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Fnt.GetSize(MAPWIDTH)*Fnt.GetSize(MAPHEIGHT) * 3));
 		FntImg.FlipImg();
 
 		glGenTextures(1, &TexName);
@@ -117,7 +116,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Fnt->GetSize(MAPWIDTH), Fnt->GetSize(MAPHEIGHT), 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, FntImg.GetImg());
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, FntImg.GetImg());
 
 		DeleteObject(*hBMP);
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)PText);
@@ -129,7 +128,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		GetClientRect(hGL, &glRect);
 		glViewport(0, 0, glRect.right, glRect.bottom);
-		BkCol = Fnt->GetCol(BACKCOL);
+		BkCol = Fnt.GetCol(BACKCOL);
 		glClearColor(((float)BkCol.Red / 255.0f), ((float)BkCol.Green / 255.0f), ((float)BkCol.Blue / 255.0f), 0.0f);
 
 		glMatrixMode(GL_PROJECTION);
@@ -142,9 +141,9 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		nLines = SendDlgItemMessage(hDlg, TXT_PREVIEW, EM_GETLINECOUNT, 0, 0);
 
-		RowPitch = Fnt->GetSize(MAPWIDTH) / Fnt->GetSize(CELLWIDTH);
-		RowFactor = (float)Fnt->GetSize(CELLHEIGHT) / (float)Fnt->GetSize(MAPHEIGHT);
-		ColFactor = (float)Fnt->GetSize(CELLWIDTH) / (float)Fnt->GetSize(MAPWIDTH);
+		RowPitch = Fnt.GetSize(MAPWIDTH) / Fnt.GetSize(CELLWIDTH);
+		RowFactor = (float)Fnt.GetSize(CELLHEIGHT) / (float)Fnt.GetSize(MAPHEIGHT);
+		ColFactor = (float)Fnt.GetSize(CELLWIDTH) / (float)Fnt.GetSize(MAPWIDTH);
 
 		glBegin(GL_QUADS);
 		for (Loop = 0; Loop != nLines; ++Loop)
@@ -156,23 +155,23 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			for (chLoop = 0; chLoop != lTxt; ++chLoop)
 			{
-				SrcRow = (Text[chLoop] - Fnt->GetBaseChar()) / RowPitch;
-				SrcCol = (Text[chLoop] - Fnt->GetBaseChar()) - (SrcRow * RowPitch);
+				SrcRow = (Text[chLoop] - Fnt.GetBaseChar()) / RowPitch;
+				SrcCol = (Text[chLoop] - Fnt.GetBaseChar()) - (SrcRow * RowPitch);
 				U = ColFactor * SrcCol;
 				V = RowFactor * SrcRow;
 
 				glTexCoord2f(U, V);
 				glVertex2i(CurX, CurY);
 				glTexCoord2f(U + ColFactor, V);
-				glVertex2i(CurX + Fnt->GetSize(CELLWIDTH), CurY);
+				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY);
 				glTexCoord2f(U + ColFactor, V + RowFactor);
-				glVertex2i(CurX + Fnt->GetSize(CELLWIDTH), CurY + Fnt->GetSize(CELLHEIGHT));
+				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY + Fnt.GetSize(CELLHEIGHT));
 				glTexCoord2f(U, V + RowFactor);
-				glVertex2i(CurX, CurY + Fnt->GetSize(CELLHEIGHT));
-				CurX += Fnt->GetCharVal(Text[chLoop], EWIDTH);
+				glVertex2i(CurX, CurY + Fnt.GetSize(CELLHEIGHT));
+				CurX += Fnt.GetCharVal(Text[chLoop], EWIDTH);
 			}
 			CurX = 0;
-			CurY += Fnt->GetSize(CELLHEIGHT);
+			CurY += Fnt.GetSize(CELLHEIGHT);
 		}
 
 		glEnd();

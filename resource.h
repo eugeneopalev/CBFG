@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by bfg.rc
 //
-#define VS_VERSION_INFO                 1
 #define CMD_TEST_CLEAR                  2
 #define IDSAVE                          3
 #define CMD_TEST_CLEAR2                 3
@@ -143,7 +142,7 @@
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        121

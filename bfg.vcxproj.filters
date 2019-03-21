@@ -56,9 +56,6 @@
     <ClCompile Include="saveopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="filedlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -70,28 +67,10 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="defs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bfg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="preview.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="about.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="saveopt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="filedlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -54,12 +54,8 @@ public:
 	void Deinit_SBM_Image();
 	int Create(int width, int height, int bpp);
 	void Reset();                  // Clear Image
-	int GetBPP();
-	int GetWidth();
-	int GetHeight();
 	unsigned char *GetImg();       // Return a pointer to image data
-	unsigned char *GetPalette();   // Return a pointer to VGA palette
-
+	
 	// Utility Functions
 	void FlipImg();   // Invert image vertically
 	int InsertAlpha(unsigned char *Alpha); // Adds an alpha channel to image

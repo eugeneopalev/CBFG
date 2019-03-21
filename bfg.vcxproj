@@ -88,7 +88,6 @@
     <ClCompile Include="about.cpp" />
     <ClCompile Include="bfg.cpp" />
     <ClCompile Include="config.cpp" />
-    <ClCompile Include="filedlg.cpp" />
     <ClCompile Include="font.cpp" />
     <ClCompile Include="preview.cpp" />
     <ClCompile Include="saveopt.cpp" />
@@ -99,14 +98,8 @@
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="about.h" />
-    <ClInclude Include="bfg.h" />
     <ClInclude Include="defs.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="filedlg.h" />
     <ClInclude Include="font.h" />
-    <ClInclude Include="preview.h" />
-    <ClInclude Include="saveopt.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="utils.h" />

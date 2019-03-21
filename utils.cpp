@@ -3,9 +3,9 @@
 #include "utils.h"
 #include "resource.h"
 
-extern HWND hMain;
-extern Font *Fnt;
-extern AppInfo *info;
+extern HWND g_hMain;
+extern Font Fnt;
+extern AppInfo info;
 
 BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue)
 {
@@ -53,11 +53,11 @@ void CreateFontMap()
 	HRGN ClipRgn;
 	int Opt = 0, Selection;
 
-	const int MapWidth = Fnt->GetSize(MAPWIDTH);
-	const int MapHeight = Fnt->GetSize(MAPHEIGHT);
+	const int MapWidth = Fnt.GetSize(MAPWIDTH);
+	const int MapHeight = Fnt.GetSize(MAPHEIGHT);
 
 	// Get the target window
-	hImgWin = GetDlgItem(hMain, IMG_TEXT);
+	hImgWin = GetDlgItem(g_hMain, IMG_TEXT);
 	if (hImgWin == NULL)
 	{
 		return;
@@ -110,26 +110,26 @@ void CreateFontMap()
 	}
 
 	// Render the font
-	if (info->Grid)
+	if (info.Grid)
 	{
 		Opt |= DFM_GRIDLINES;
 	}
 
-	if (info->wMarker)
+	if (info.wMarker)
 	{
 		Opt |= DFM_WIDTHLINE;
 	}
 
-	if (info->ModAll)
+	if (info.ModAll)
 	{
 		Selection = -1;
 	}
 	else
 	{
-		Selection = info->Select;
+		Selection = info.Select;
 	}
 
-	FntMap = Fnt->DrawFontMap(Opt, Selection);
+	FntMap = Fnt.DrawFontMap(Opt, Selection);
 
 	// Select Font Map into Font DC
 	SelectObject(Fdc, *FntMap);
@@ -143,8 +143,8 @@ void CreateFontMap()
 
 	// Copy Font into buffer
 	SetStretchBltMode(Mdc, WHITEONBLACK);
-	StretchBlt(Mdc, 0, 0, (int)(MapWidth * info->Zoom), (int)(MapHeight * info->Zoom),
-	           Fdc, (int)(info->hScr / info->Zoom), (int)(info->vScr / info->Zoom),
+	StretchBlt(Mdc, 0, 0, (int)(MapWidth * info.Zoom), (int)(MapHeight * info.Zoom),
+	           Fdc, (int)(info.hScr / info.Zoom), (int)(info.vScr / info.Zoom),
 	           MapWidth, MapHeight, SRCCOPY);
 
 	// Copy Font into window
@@ -164,81 +164,77 @@ void CreateFontMap()
 
 void CalcScroll()
 {
-	extern Font *Fnt;
-	extern AppConfig *AppCfg;
-	extern AppInfo *info;
-
 	RECT WinSize;
 	int XDelta, YDelta;
 	SCROLLINFO sInf;
 	int TexWidth, TexHt;
 	int CharRow, CharCol, RowPitch;
 
-	TexWidth = Fnt->GetSize(MAPWIDTH);
-	TexHt = Fnt->GetSize(MAPHEIGHT);
-	RowPitch = TexWidth / Fnt->GetSize(CELLWIDTH);
+	TexWidth = Fnt.GetSize(MAPWIDTH);
+	TexHt = Fnt.GetSize(MAPHEIGHT);
+	RowPitch = TexWidth / Fnt.GetSize(CELLWIDTH);
 
-	GetClientRect(GetDlgItem(hMain, IMG_TEXT), &WinSize);
+	GetClientRect(GetDlgItem(g_hMain, IMG_TEXT), &WinSize);
 
-	if (!info->ModAll) // Check for active selection
+	if (!info.ModAll) // Check for active selection
 	{
 		// Calculate position of char
-		CharCol = info->Select;
+		CharCol = info.Select;
 		CharRow = CharCol / RowPitch;
 		CharCol -= CharRow * RowPitch;
 
 		// Convert to pixels (Zoom?)
-		CharCol *= Fnt->GetSize(CELLWIDTH);
-		CharRow *= Fnt->GetSize(CELLHEIGHT);
+		CharCol *= Fnt.GetSize(CELLWIDTH);
+		CharRow *= Fnt.GetSize(CELLHEIGHT);
 	}
 
 	// Calculate something?
-	XDelta = (int)(TexWidth * info->Zoom) - WinSize.right;
-	YDelta = (int)(TexHt * info->Zoom) - WinSize.bottom;
+	XDelta = (int)(TexWidth * info.Zoom) - WinSize.right;
+	YDelta = (int)(TexHt * info.Zoom) - WinSize.bottom;
 
 	if (XDelta > 0)
 	{
-		SetScrollRange(GetDlgItem(hMain, SCR_HOR), SB_CTL, 0, XDelta, FALSE);
+		SetScrollRange(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, 0, XDelta, FALSE);
 
 		sInf.cbSize = sizeof(SCROLLINFO);
 		sInf.fMask = SIF_RANGE;
-		GetScrollInfo(GetDlgItem(hMain, SCR_HOR), SB_CTL, &sInf);
-		if (info->hScr > sInf.nMax)
+		GetScrollInfo(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, &sInf);
+		if (info.hScr > sInf.nMax)
 		{
-			info->hScr = sInf.nMax;
+			info.hScr = sInf.nMax;
 		}
 
-		SetScrollPos(GetDlgItem(hMain, SCR_HOR), SB_CTL, info->hScr, TRUE);
-		info->hScroll = TRUE;
+		SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, info.hScr, TRUE);
+		info.hScroll = TRUE;
 	}
 	else // Prevent offset pushing texture off left edge of window
 	{
-		SetScrollPos(GetDlgItem(hMain, SCR_HOR), SB_CTL, 0, TRUE);
-		info->hScr = 0;
-		EnableWindow(GetDlgItem(hMain, SCR_HOR), FALSE);
-		info->hScroll = FALSE;
+		SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, 0, TRUE);
+		info.hScr = 0;
+		EnableWindow(GetDlgItem(g_hMain, SCR_HOR), FALSE);
+		info.hScroll = FALSE;
 	}
 
 	if (YDelta > 0)
 	{
-		SetScrollRange(GetDlgItem(hMain, SCR_VERT), SB_CTL, 0, YDelta, FALSE);
+		SetScrollRange(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, 0, YDelta, FALSE);
 
 		sInf.cbSize = sizeof(SCROLLINFO);
 		sInf.fMask = SIF_RANGE;
-		GetScrollInfo(GetDlgItem(hMain, SCR_VERT), SB_CTL, &sInf);
-		if (info->vScr > sInf.nMax)
+		GetScrollInfo(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, &sInf);
+		if (info.vScr > sInf.nMax)
 		{
-			info->vScr = sInf.nMax;
+			info.vScr = sInf.nMax;
 		}
 
-		SetScrollPos(GetDlgItem(hMain, SCR_VERT), SB_CTL, info->vScr, TRUE);
-		info->vScroll = TRUE;
+		SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, info.vScr, TRUE);
+		info.vScroll = TRUE;
 	}
 	else // Prevent offset pushing texture off top edge of window
 	{
-		SetScrollPos(GetDlgItem(hMain, SCR_VERT), SB_CTL, 0, TRUE);
-		info->vScr = 0;
-		EnableWindow(GetDlgItem(hMain, SCR_VERT), FALSE);
-		info->vScroll = FALSE;
+		SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, 0, TRUE);
+		info.vScr = 0;
+		EnableWindow(GetDlgItem(g_hMain, SCR_VERT), FALSE);
+		info.vScroll = FALSE;
 	}
 }
