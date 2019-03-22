@@ -2,9 +2,7 @@
 #include "font.h"
 #include "resource.h"
 
-GLuint TexName;
 HDC glDC;
-HGLRC glRC;
 HWND hGL;
 
 extern HINSTANCE g_hInstance;
@@ -13,20 +11,25 @@ extern Font Fnt;
 
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	int nLines, Loop, chLoop, offset;
+	int nLines, Loop, chLoop, offset, i, x, y;
 	int CurX, CurY;
 	float RowFactor, ColFactor, U, V;
 	int SrcCol, SrcRow, RowPitch;
 	unsigned char Text[255];
 	HBITMAP *hBMP;
-	DIBSECTION bmInfo;
 	Font FntImg;
 	RECT glRect;
-	BFG_RGB BkCol;
 	LRESULT lTxt;
-
-	PIXELFORMATDESCRIPTOR pfd, *ppfd;
-	int pixelformat;
+	BITMAP          bitmap;
+	HDC             hdcMem;
+	HGDIOBJ         oldBitmap;
+	PAINTSTRUCT ps;
+	HDC hdc;
+	HBRUSH hbrWhite, hbrGray;
+	RECT rc, drc;
+	BOOL igr, gr;
+	LPDRAWITEMSTRUCT lpdis;
+	HGDIOBJ original;
 
 	static char PText[1024];
 	char Sample[13][128] =
@@ -51,93 +54,31 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	switch (msg)
 	{
 	case WM_INITDIALOG:
-		// Init random text string
 		if (!lstrlen(PText))
 		{
 			srand((unsigned int)time(NULL));
 			offset = rand() % 13;
 			lstrcpy(PText, &Sample[offset][0]);
 		}
-
-		// Limit text length
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, EM_LIMITTEXT, 254, 0);
-
-		// Init GL Window
-		hGL = GetDlgItem(hDlg, IDC_GL);
-		glDC = GetDC(hGL);
-		if (glDC == NULL)
-		{
-			MessageBox(NULL, "GetDC failed", "Error", MB_OK);
-		}
-
-		ppfd = &pfd;
-		ZeroMemory(ppfd, sizeof(PIXELFORMATDESCRIPTOR));
-
-		ppfd->nSize = sizeof(PIXELFORMATDESCRIPTOR);
-		ppfd->nVersion = 1;
-		ppfd->dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL |  PFD_DOUBLEBUFFER;
-		ppfd->dwLayerMask = PFD_MAIN_PLANE;
-		ppfd->iPixelType = PFD_TYPE_RGBA;
-		ppfd->cColorBits = 32;
-		ppfd->cDepthBits = 8;
-		ppfd->cAccumBits = 0;
-		ppfd->cStencilBits = 0;
-
-		pixelformat = ChoosePixelFormat(glDC, ppfd);
-
-		if (pixelformat == 0)
-		{
-			MessageBox(NULL, "ChoosePixelFormat failed", "Error", MB_OK);
-			return FALSE;
-		}
-
-		if (SetPixelFormat(glDC, pixelformat, ppfd) == FALSE)
-		{
-			MessageBox(NULL, "SetPixelFormat failed", "Error", MB_OK);
-			return FALSE;
-		}
-
-		glRC = wglCreateContext(glDC);
-		wglMakeCurrent(glDC, glRC);
-
-		glEnable(GL_TEXTURE_2D);
-
-		// Build Texture
-		hBMP = Fnt.DrawFontMap(FALSE, -1);
-		GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo);
-		FntImg.Init_SBM_Image();
-		FntImg.Create(Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), 24);
-		memcpy(FntImg.GetImg(), bmInfo.dsBm.bmBits, (Fnt.GetSize(MAPWIDTH)*Fnt.GetSize(MAPHEIGHT) * 3));
-		FntImg.FlipImg();
-
-		glGenTextures(1, &TexName);
-		glBindTexture(GL_TEXTURE_2D, TexName);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, FntImg.GetImg());
-
-		DeleteObject(*hBMP);
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)PText);
-		FntImg.Deinit_SBM_Image();
-		return 0;
+		return TRUE;
 
 	case WM_APP:
 		CurX = CurY = 0;
 
 		GetClientRect(hGL, &glRect);
-		glViewport(0, 0, glRect.right, glRect.bottom);
-		BkCol = Fnt.GetCol(BACKCOL);
-		glClearColor(((float)BkCol.Red / 255.0f), ((float)BkCol.Green / 255.0f), ((float)BkCol.Blue / 255.0f), 0.0f);
+		//glViewport(0, 0, glRect.right, glRect.bottom);
+		//BkCol = Fnt.GetCol(BACKCOL);
+		//glClearColor(((float)BkCol.Red / 255.0f), ((float)BkCol.Green / 255.0f), ((float)BkCol.Blue / 255.0f), 0.0f);
 
-		glMatrixMode(GL_PROJECTION);
+		/*glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		glOrtho(0.0f, glRect.right, glRect.bottom, 0.0f, -10.0f, 10.0f);
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);*/
 
 		nLines = SendDlgItemMessage(hDlg, TXT_PREVIEW, EM_GETLINECOUNT, 0, 0);
 
@@ -145,7 +86,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		RowFactor = (float)Fnt.GetSize(CELLHEIGHT) / (float)Fnt.GetSize(MAPHEIGHT);
 		ColFactor = (float)Fnt.GetSize(CELLWIDTH) / (float)Fnt.GetSize(MAPWIDTH);
 
-		glBegin(GL_QUADS);
+		//glBegin(GL_QUADS);
 		for (Loop = 0; Loop != nLines; ++Loop)
 		{
 			Text[0] = 0xFF;
@@ -160,36 +101,96 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				U = ColFactor * SrcCol;
 				V = RowFactor * SrcRow;
 
-				glTexCoord2f(U, V);
+				/*glTexCoord2f(U, V);
 				glVertex2i(CurX, CurY);
 				glTexCoord2f(U + ColFactor, V);
 				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY);
 				glTexCoord2f(U + ColFactor, V + RowFactor);
 				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY + Fnt.GetSize(CELLHEIGHT));
 				glTexCoord2f(U, V + RowFactor);
-				glVertex2i(CurX, CurY + Fnt.GetSize(CELLHEIGHT));
+				glVertex2i(CurX, CurY + Fnt.GetSize(CELLHEIGHT));*/
 				CurX += Fnt.GetCharVal(Text[chLoop], EWIDTH);
 			}
 			CurX = 0;
 			CurY += Fnt.GetSize(CELLHEIGHT);
 		}
 
-		glEnd();
-
 		SwapBuffers(glDC);
-		return 0;
-
-	case WM_DRAWITEM:
-		if (wParam == IDC_GL)
-		{
-			SendMessage(hDlg, WM_APP, 0, 0);
-		}
 		return TRUE;
+
+#if 0
+	case WM_PAINT:
+		hdc = BeginPaint(GetDlgItem(hDlg, IDC_GL), &ps);
+
+		//
+		hbrWhite = (HBRUSH)GetStockObject(WHITE_BRUSH);
+		hbrGray = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+		FillRect(hdc, &ps.rcPaint, hbrWhite);
+		for (y = ps.rcPaint.top; y < ps.rcPaint.bottom; y += 8)
+		{
+			gr = (y / 8) % 2;
+
+			for (x = ps.rcPaint.left; x < ps.rcPaint.right; x += 8)
+			{
+				drc.left = x;
+				drc.top = y;
+				drc.right = min(x + 8, ps.rcPaint.right);
+				drc.bottom = min(y + 8, ps.rcPaint.bottom);
+
+				if (gr)
+				{
+					FillRect(hdc, &drc, hbrGray);
+				}
+				gr = !gr;
+			}
+		}
+
+		//
+		hdcMem = CreateCompatibleDC(hdc);
+
+		hBMP = Fnt.DrawFontMap(FALSE, -1);
+		original = SelectObject(hdcMem, *hBMP);
+
+		GetObject(*hBMP, sizeof(bitmap), &bitmap);
+		BitBlt(hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom, hdcMem, 0, 0, SRCPAINT);
+
+		SelectObject(hdcMem, original);
+		DeleteDC(hdcMem);
+
+		DeleteObject(*hBMP);
+
+		EndPaint(hDlg, &ps);
+		return TRUE;
+#endif
 
 	case WM_CLOSE:
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_GETTEXT, 1024, (LPARAM)PText);
 		EndDialog(hDlg, 0);
-		return 0;
+		return TRUE;
+
+	case WM_DRAWITEM:
+		lpdis = (LPDRAWITEMSTRUCT)lParam;
+
+		FillRect(lpdis->hDC, &lpdis->rcItem, (HBRUSH)GetStockObject(WHITE_BRUSH));
+
+		hbrGray = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
+		for (y = lpdis->rcItem.top; y < lpdis->rcItem.bottom; y += 8)
+		{
+			gr = y / 8 % 2;
+			for (x = lpdis->rcItem.left; x < lpdis->rcItem.right; x += 8)
+			{
+				if (gr)
+				{
+					drc.left = x;
+					drc.top = y;
+					drc.right = min(x + 8, lpdis->rcItem.right);
+					drc.bottom = min(y + 8, lpdis->rcItem.bottom);
+					FillRect(lpdis->hDC, &drc, hbrGray);
+				}
+				gr = !gr;
+			}
+		}
+		return TRUE;
 
 	case WM_COMMAND:
 	{
@@ -197,32 +198,31 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case EN_CHANGE:
 			SendMessage(hDlg, WM_APP, 0, 0);
-			return 0;
+			return TRUE;
 		}
 
-		switch (LOWORD(wParam)) // Buttons & Menu items
+		switch (LOWORD(wParam))
 		{
 		case CMD_OK:
 			SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_GETTEXT, 1024, (LPARAM)PText);
-			wglDeleteContext(glRC);
 			EndDialog(hDlg, 0);
-			return 0;
+			return TRUE;
 
 		case CMD_TEST_CLEAR:
 			SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)"");
 			SendMessage(hDlg, WM_APP, 0, 0);
-			return 0;
+			return TRUE;
 
 		case CMD_TEST_PANGRAM:
 			offset = rand() % 13;
 			SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)&Sample[offset][0]);
 			SendMessage(hDlg, WM_APP, 0, 0);
-			return 0;
+			return TRUE;
 		}
 
 	}
 
 	default:
-		return 0;
+		return FALSE;
 	}
 }

@@ -3,11 +3,10 @@
 
 #define _WIN32_WINNT _WIN32_WINNT_NT4
 #include <sdkddkver.h>
+
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
-
-#include <gl\gl.h>
 
 #include <stdlib.h>
 #include <time.h>
