@@ -10,11 +10,7 @@
 #define APP_ICON                        101
 #define DLG_MAIN                        103
 #define MNU_MAIN                        104
-#define ICO_UP                          105
-#define ICO_DOWN                        106
 #define DLG_ABOUT                       106
-#define ICO_RIGHT                       107
-#define ICO_LEFT                        108
 #define DLG_SAVEOPT                     113
 #define DLG_CONFIG                      114
 #define DLG_PREVIEW                     115
@@ -145,7 +141,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        121
+#define _APS_NEXT_RESOURCE_VALUE        122
 #define _APS_NEXT_COMMAND_VALUE         40051
 #define _APS_NEXT_CONTROL_VALUE         1050
 #define _APS_NEXT_SYMED_VALUE           103

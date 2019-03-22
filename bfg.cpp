@@ -129,10 +129,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_INITDIALOG:
 		SendMessage(hDlg, WM_SETICON, ICON_BIG, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(APP_ICON)));
-		SendDlgItemMessage(hDlg, CMD_UP, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(ICO_UP)));
-		SendDlgItemMessage(hDlg, CMD_DOWN, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(ICO_DOWN)));
-		SendDlgItemMessage(hDlg, CMD_RIGHT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(ICO_RIGHT)));
-		SendDlgItemMessage(hDlg, CMD_LEFT, BM_SETIMAGE, IMAGE_ICON, (LPARAM)LoadIcon(g_hInstance, MAKEINTRESOURCE(ICO_LEFT)));
 		SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_ADDSTRING, 0, (LPARAM)"16");
 		SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_ADDSTRING, 0, (LPARAM)"32");
 		SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_ADDSTRING, 0, (LPARAM)"64");

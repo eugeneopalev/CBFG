@@ -78,11 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Image Include="AppIcon.ico" />
-    <Image Include="ico_down.ico" />
-    <Image Include="ico_left.ico" />
-    <Image Include="ico_right.ico" />
-    <Image Include="ico_up.ico" />
+    <Image Include="bfg.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="about.cpp" />

@@ -15,23 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="AppIcon.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ico_down.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ico_left.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ico_right.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ico_up.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -78,5 +61,10 @@
     <ResourceCompile Include="bfg.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="bfg.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
