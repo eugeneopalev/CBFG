@@ -56,6 +56,9 @@
     <ClInclude Include="defs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bfg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="bfg.rc">
@@ -64,6 +67,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="bfg.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="background.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

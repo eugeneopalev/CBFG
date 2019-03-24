@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "font.h"
+#include "bfg.h"
 #include "utils.h"
 
 #include "zlib/zlib.h"
@@ -906,8 +907,6 @@ bool Font::ImportData(char *fname)
 	UNREFERENCED_PARAMETER(fname);
 
 #if 0
-	extern Font *Fnt;
-
 	FILE *in;
 	long fsize, datptr;
 	int Index, Val;

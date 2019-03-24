@@ -10,6 +10,8 @@ Font Fnt;
 AppInfo info;
 long OldProc;
 
+HBRUSH g_hBackground;
+
 BOOL CALLBACK AboutProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -336,7 +338,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		CreateFontMap();
 		return FALSE;
 
-	case WM_APP+1: // Control Update
+	case WM_APP + 1: // Control Update
 		if (info.ModAll == TRUE)
 		{
 			wsprintf(Text, "%d", Fnt.GetGlobal(HOFFSET));
@@ -1407,7 +1409,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		info.wMarker = Ret & SHOW_WIDTH;
 	}
 
-	g_hMain = CreateDialog(g_hInstance, MAKEINTRESOURCE(DLG_MAIN), NULL, MainProc);
+	g_hMain = CreateDialog(g_hInstance, MAKEINTRESOURCE(RES_DLG_MAIN), NULL, MainProc);
 	if (!g_hMain)
 	{
 		goto exit;
@@ -1417,6 +1419,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	OldProc = GetWindowLong(GetDlgItem(g_hMain, IMG_TEXT), GWL_WNDPROC);
 	SetWindowLong(GetDlgItem(g_hMain, IMG_TEXT), GWL_WNDPROC, (LONG)TextWinProc);
 	SetClassLong(GetDlgItem(g_hMain, IMG_TEXT), GCL_HBRBACKGROUND, NULL);
+
+	g_hBackground = CreatePatternBrush(LoadBitmap(g_hInstance, MAKEINTRESOURCE(RES_BMP_BACKGROUND)));
+	if (g_hBackground == NULL)
+	{
+		goto exit;
+	}
 
 	//HACCEL hAccels = LoadAccelerators(g_hInstance, MAKEINTRESOURCEW(RES_ACCELERATORS));
 	for (;;)
@@ -1441,5 +1449,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 
 exit:
+	DeleteObject(g_hBackground);
+
 	return msg.wParam;
 }

@@ -1,13 +1,9 @@
 #include "pch.h"
 #include "defs.h"
 #include "font.h"
+#include "bfg.h"
 #include "utils.h"
 #include "resource.h"
-
-extern HINSTANCE g_hInstance;
-extern HWND g_hMain;
-extern Font Fnt;
-extern AppInfo info;
 
 void SetConfigRGB(HWND Win, BFG_RGB Cols)
 {

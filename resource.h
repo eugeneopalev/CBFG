@@ -8,12 +8,13 @@
 #define CMD_TEST_PANGRAM                3
 #define IDDEFAULT                       4
 #define APP_ICON                        101
-#define DLG_MAIN                        103
+#define RES_DLG_MAIN                    103
 #define MNU_MAIN                        104
 #define DLG_ABOUT                       106
 #define DLG_SAVEOPT                     113
 #define DLG_CONFIG                      114
 #define DLG_PREVIEW                     115
+#define RES_BMP_BACKGROUND              122
 #define IMG_TEXT                        1000
 #define IDC_COMBO1                      1001
 #define CBO_FONTS                       1001
@@ -104,6 +105,7 @@
 #define ODR_BACKCOL                     1047
 #define IDC_LIST1                       1049
 #define LST_CREDITS                     1049
+#define RES_PIC_PREVIEW                 1050
 #define ID_FILE_SAVEAS                  40004
 #define ID_FILE_EXIT                    40005
 #define ID_FONT_RESET                   40006
@@ -141,9 +143,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        122
+#define _APS_NEXT_RESOURCE_VALUE        123
 #define _APS_NEXT_COMMAND_VALUE         40051
-#define _APS_NEXT_CONTROL_VALUE         1050
+#define _APS_NEXT_CONTROL_VALUE         1051
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

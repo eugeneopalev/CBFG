@@ -1,16 +1,192 @@
 #include "pch.h"
 #include "font.h"
+#include "bfg.h"
 #include "resource.h"
 
 HDC glDC;
 HWND hGL;
 
-extern HINSTANCE g_hInstance;
-extern HWND g_hMain;
-extern Font Fnt;
+BOOL CALLBACK ResizeWndProc(HWND hCtrl, LPARAM lParam)
+{
+	LPRECT rcWnd = (LPRECT)lParam;
+
+	int i = GetWindowLongW(hCtrl, GWL_ID);
+	switch (i)
+	{
+	case IDC_GL:
+		MoveWindow(hCtrl, rcWnd->left, rcWnd->top, rcWnd->right, rcWnd->bottom - 96, TRUE);
+		break;
+
+	case IDC_STATIC:
+		SetWindowPos(hCtrl, NULL, rcWnd->top + 8, rcWnd->bottom - 88, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		break;
+
+	case TXT_PREVIEW:
+		MoveWindow(hCtrl, rcWnd->top + 8, rcWnd->bottom - 72, rcWnd->right - 96, 64, TRUE);
+		break;
+
+	default:
+		break;
+	}
+
+	return TRUE;
+}
+
+// this function brought from here:
+// https://docs.microsoft.com/en-us/windows/desktop/gdi/alpha-blending-a-bitmap
+void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
+{
+	HDC hdc;               // handle of the DC we will create
+	BLENDFUNCTION bf;      // structure for alpha blending
+	HBITMAP hbitmap;       // bitmap handle
+	BITMAPINFO bmi;        // bitmap header
+	VOID *pvBits;          // pointer to DIB section
+	ULONG   ulWindowWidth, ulWindowHeight;      // window width/height
+	ULONG   ulBitmapWidth, ulBitmapHeight;      // bitmap width/height
+	RECT    rt;            // used for getting window dimensions
+	UINT32   x, y;         // stepping variables
+	UCHAR ubAlpha;         // used for doing transparent gradient
+	UCHAR ubRed;
+	UCHAR ubGreen;
+	UCHAR ubBlue;
+	float fAlphaFactor;    // used to do premultiply
+
+	// get window dimensions
+	GetClientRect(hWnd, &rt);
+
+	// calculate window width/height
+	ulWindowWidth = rt.right - rt.left;
+	ulWindowHeight = rt.bottom - rt.top;
+
+	// make sure we have at least some window size
+	if ((!ulWindowWidth) || (!ulWindowHeight))
+	{
+		return;
+	}
+
+	// divide the window into 3 horizontal areas
+	ulWindowHeight = ulWindowHeight / 3;
+
+	// create a DC for our bitmap -- the source DC for AlphaBlend
+	hdc = CreateCompatibleDC(hdcwnd);
+
+	// zero the memory for the bitmap info
+	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+
+	// setup bitmap info
+	// set the bitmap width and height to 60% of the width and height of each of the three horizontal areas. Later on, the blending will occur in the center of each of the three areas.
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = ulBitmapWidth = ulWindowWidth - (ulWindowWidth / 5) * 2;
+	bmi.bmiHeader.biHeight = ulBitmapHeight = ulWindowHeight - (ulWindowHeight / 5) * 2;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = ulBitmapWidth * ulBitmapHeight * 4;
+
+	// create our DIB section and select the bitmap into the dc
+	hbitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0x0);
+	SelectObject(hdc, hbitmap);
+
+	// in top window area, constant alpha = 50%, but no source alpha
+	// the color format for each pixel is 0xaarrggbb
+	// set all pixels to blue and set source alpha to zero
+	for (y = 0; y < ulBitmapHeight; y++)
+	{
+		for (x = 0; x < ulBitmapWidth; x++)
+		{
+			((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0x000000ff;
+		}
+	}
+
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 0x7f;  // half of 0xff = 50% transparency
+	bf.AlphaFormat = 0;             // ignore source alpha channel
+	if (!AlphaBlend(hdcwnd, ulWindowWidth / 5, ulWindowHeight / 5,
+	                ulBitmapWidth, ulBitmapHeight,
+	                hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf))
+	{
+		return;    // alpha blend failed
+	}
+
+	// in middle window area, constant alpha = 100% (disabled), source
+	// alpha is 0 in middle of bitmap and opaque in rest of bitmap
+	for (y = 0; y < ulBitmapHeight; y++)
+	{
+		for (x = 0; x < ulBitmapWidth; x++)
+		{
+			if ((x > (int)(ulBitmapWidth / 5)) && (x < (ulBitmapWidth - ulBitmapWidth / 5)) &&
+			        (y > (int)(ulBitmapHeight / 5)) && (y < (ulBitmapHeight - ulBitmapHeight / 5)))
+				//in middle of bitmap: source alpha = 0 (transparent).
+				// This means multiply each color component by 0x00.
+				// Thus, after AlphaBlend, we have a, 0x00 * r,
+				// 0x00 * g,and 0x00 * b (which is 0x00000000)
+				// for now, set all pixels to red
+			{
+				((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0x00ff0000;
+			}
+			else
+				// in the rest of bitmap, source alpha = 0xff (opaque)
+				// and set all pixels to blue
+			{
+				((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0xff0000ff;
+			}
+		}
+	}
+
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.AlphaFormat = AC_SRC_ALPHA;  // use source alpha
+	bf.SourceConstantAlpha = 0xff;  // opaque (disable constant alpha)
+	if (!AlphaBlend(hdcwnd, ulWindowWidth / 5, ulWindowHeight / 5 + ulWindowHeight, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf))
+	{
+		return;
+	}
+
+	// bottom window area, use constant alpha = 75% and a changing
+	// source alpha. Create a gradient effect using source alpha, and
+	// then fade it even more with constant alpha
+	ubRed = 0x00;
+	ubGreen = 0x00;
+	ubBlue = 0xff;
+
+	for (y = 0; y < ulBitmapHeight; y++)
+	{
+		for (x = 0; x < ulBitmapWidth; x++)
+		{
+			// for a simple gradient, base the alpha value on the x
+			// value of the pixel
+			ubAlpha = (UCHAR)((float)x / (float)ulBitmapWidth * 255);
+			//calculate the factor by which we multiply each component
+			fAlphaFactor = (float)ubAlpha / (float)0xff;
+			// multiply each pixel by fAlphaFactor, so each component
+			// is less than or equal to the alpha value.
+			((UINT32 *)pvBits)[x + y * ulBitmapWidth]
+			    = (ubAlpha << 24) |                       //0xaa000000
+			      ((UCHAR)(ubRed * fAlphaFactor) << 16) |  //0x00rr0000
+			      ((UCHAR)(ubGreen * fAlphaFactor) << 8) | //0x0000gg00
+			      ((UCHAR)(ubBlue   * fAlphaFactor));      //0x000000bb
+		}
+	}
+
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.AlphaFormat = AC_SRC_ALPHA;   // use source alpha
+	bf.SourceConstantAlpha = 0xbf;   // use constant alpha, with 75% opaqueness
+	AlphaBlend(hdcwnd, ulWindowWidth / 5,
+	           ulWindowHeight / 5 + 2 * ulWindowHeight, ulBitmapWidth,
+	           ulBitmapHeight, hdc, 0, 0, ulBitmapWidth,
+	           ulBitmapHeight, bf);
+
+	// do cleanup
+	DeleteObject(hbitmap);
+	DeleteDC(hdc);
+}
 
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	RECT rcDlg;
+
 	int nLines, Loop, chLoop, offset, i, x, y;
 	int CurX, CurY;
 	float RowFactor, ColFactor, U, V;
@@ -23,8 +199,8 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	BITMAP          bitmap;
 	HDC             hdcMem;
 	HGDIOBJ         oldBitmap;
-	PAINTSTRUCT ps;
-	HDC hdc;
+	//PAINTSTRUCT ps;
+	//HDC hdc;
 	HBRUSH hbrWhite, hbrGray;
 	RECT rc, drc;
 	BOOL igr, gr;
@@ -49,8 +225,6 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{"MY FAXED JOKE WON A PAGER IN THE CABLE TV QUIZ SHOW"}
 	};
 
-	UNREFERENCED_PARAMETER(lParam);
-
 	switch (msg)
 	{
 	case WM_INITDIALOG:
@@ -62,6 +236,17 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, EM_LIMITTEXT, 254, 0);
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)PText);
+
+		return TRUE;
+
+	case WM_SIZE:
+		GetClientRect(hDlg, &rcDlg);
+		EnumChildWindows(hDlg, ResizeWndProc, (LPARAM)&rcDlg);
+		return TRUE;
+
+	case WM_GETMINMAXINFO:
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.x = 320;
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.y = 240;
 		return TRUE;
 
 	case WM_APP:
@@ -118,51 +303,6 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SwapBuffers(glDC);
 		return TRUE;
 
-#if 0
-	case WM_PAINT:
-		hdc = BeginPaint(GetDlgItem(hDlg, IDC_GL), &ps);
-
-		//
-		hbrWhite = (HBRUSH)GetStockObject(WHITE_BRUSH);
-		hbrGray = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-		FillRect(hdc, &ps.rcPaint, hbrWhite);
-		for (y = ps.rcPaint.top; y < ps.rcPaint.bottom; y += 8)
-		{
-			gr = (y / 8) % 2;
-
-			for (x = ps.rcPaint.left; x < ps.rcPaint.right; x += 8)
-			{
-				drc.left = x;
-				drc.top = y;
-				drc.right = min(x + 8, ps.rcPaint.right);
-				drc.bottom = min(y + 8, ps.rcPaint.bottom);
-
-				if (gr)
-				{
-					FillRect(hdc, &drc, hbrGray);
-				}
-				gr = !gr;
-			}
-		}
-
-		//
-		hdcMem = CreateCompatibleDC(hdc);
-
-		hBMP = Fnt.DrawFontMap(FALSE, -1);
-		original = SelectObject(hdcMem, *hBMP);
-
-		GetObject(*hBMP, sizeof(bitmap), &bitmap);
-		BitBlt(hdc, ps.rcPaint.left, ps.rcPaint.top, ps.rcPaint.right, ps.rcPaint.bottom, hdcMem, 0, 0, SRCPAINT);
-
-		SelectObject(hdcMem, original);
-		DeleteDC(hdcMem);
-
-		DeleteObject(*hBMP);
-
-		EndPaint(hDlg, &ps);
-		return TRUE;
-#endif
-
 	case WM_CLOSE:
 		SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_GETTEXT, 1024, (LPARAM)PText);
 		EndDialog(hDlg, 0);
@@ -171,25 +311,22 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_DRAWITEM:
 		lpdis = (LPDRAWITEMSTRUCT)lParam;
 
-		FillRect(lpdis->hDC, &lpdis->rcItem, (HBRUSH)GetStockObject(WHITE_BRUSH));
+		FillRect(lpdis->hDC, &lpdis->rcItem, g_hBackground);
 
-		hbrGray = (HBRUSH)GetStockObject(LTGRAY_BRUSH);
-		for (y = lpdis->rcItem.top; y < lpdis->rcItem.bottom; y += 8)
-		{
-			gr = y / 8 % 2;
-			for (x = lpdis->rcItem.left; x < lpdis->rcItem.right; x += 8)
-			{
-				if (gr)
-				{
-					drc.left = x;
-					drc.top = y;
-					drc.right = min(x + 8, lpdis->rcItem.right);
-					drc.bottom = min(y + 8, lpdis->rcItem.bottom);
-					FillRect(lpdis->hDC, &drc, hbrGray);
-				}
-				gr = !gr;
-			}
-		}
+		hdcMem = CreateCompatibleDC(lpdis->hDC);
+
+		hBMP = Fnt.DrawFontMap(FALSE, -1);
+		original = SelectObject(hdcMem, *hBMP);
+
+		BitBlt(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, SRCCOPY);
+
+		SelectObject(hdcMem, original);
+
+		DeleteObject(*hBMP);
+		DeleteDC(hdcMem);
+
+		//DrawAlphaBlend(hDlg, lpdis->hDC);
+
 		return TRUE;
 
 	case WM_COMMAND:
@@ -197,7 +334,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (HIWORD(wParam))
 		{
 		case EN_CHANGE:
-			SendMessage(hDlg, WM_APP, 0, 0);
+			RedrawWindow(hDlg, NULL, NULL, RDW_INVALIDATE);
 			return TRUE;
 		}
 
@@ -210,13 +347,14 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case CMD_TEST_CLEAR:
 			SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)"");
-			SendMessage(hDlg, WM_APP, 0, 0);
+			RedrawWindow(hDlg, NULL, NULL, RDW_INVALIDATE);
+			//SendMessage(hDlg, WM_APP, 0, 0);
 			return TRUE;
 
 		case CMD_TEST_PANGRAM:
 			offset = rand() % 13;
 			SendDlgItemMessage(hDlg, TXT_PREVIEW, WM_SETTEXT, 0, (LPARAM)&Sample[offset][0]);
-			SendMessage(hDlg, WM_APP, 0, 0);
+			//SendMessage(hDlg, WM_APP, 0, 0);
 			return TRUE;
 		}
 

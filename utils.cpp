@@ -1,11 +1,8 @@
 #include "pch.h"
 #include "font.h"
 #include "utils.h"
+#include "bfg.h"
 #include "resource.h"
-
-extern HWND g_hMain;
-extern Font Fnt;
-extern AppInfo info;
 
 BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue)
 {
