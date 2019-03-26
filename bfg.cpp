@@ -112,6 +112,34 @@ BOOL CALLBACK TextWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc((WNDPROC)OldProc, hDlg, msg, wParam, lParam);
 }
 
+// this function brought from here:
+// https://docs.microsoft.com/en-us/windows/desktop/gdi/creating-a-logical-font
+HFONT MyCreateFont()
+{
+	CHOOSEFONT cf;
+
+	ZeroMemory(&cf, sizeof(cf));
+	cf.lStructSize = sizeof(cf);
+	cf.hwndOwner = g_hMain;
+	//cf.hDC = (HDC)NULL;
+	cf.lpLogFont = Fnt.GetLogicalFont();
+	//cf.iPointSize = 0;
+	cf.Flags = CF_SCREENFONTS;
+	//cf.rgbColors = RGB(0, 0, 0);
+	//cf.lCustData = 0L;
+	//cf.lpfnHook = (LPCFHOOKPROC)NULL;
+	//cf.lpTemplateName = (LPSTR)NULL;
+	cf.hInstance = g_hInstance;
+	//cf.lpszStyle = (LPSTR)NULL;
+	cf.nFontType = SCREEN_FONTTYPE;
+	//cf.nSizeMin = 0;
+	//cf.nSizeMax = 0;
+
+	ChooseFont(&cf);
+
+	return CreateFontIndirect(cf.lpLogFont);
+}
+
 BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HDC dc;

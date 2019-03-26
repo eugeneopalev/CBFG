@@ -58,13 +58,6 @@ typedef struct
 
 typedef struct
 {
-	unsigned char ID1, ID2;
-	int ImageWidth, ImageHeight, CellWidth, CellHeight;
-	unsigned char BPP, StartPoint;
-} FontFileHeader;
-
-typedef struct
-{
 	char ID[7];
 	int ImgWidth, ImgHeight, CellWidth, CellHeight, FontHeight, FontWidth;
 	BFG_RGB BackCol, ForeCol, GridCol, WidthCol, SelCol;

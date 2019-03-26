@@ -43,7 +43,7 @@ void CreateFontMap()
 {
 	HDC Wdc, Mdc, Fdc;
 	HWND hImgWin;
-	HBITMAP *FntMap;
+	HBITMAP FntMap;
 	HBITMAP mMap;
 	BITMAPINFO BMDat;
 	RECT ClipArea;
@@ -126,10 +126,10 @@ void CreateFontMap()
 		Selection = info.Select;
 	}
 
-	FntMap = Fnt.DrawFontMap(Opt, Selection);
+	FntMap = Fnt.DrawBitmap(Fdc, Opt, Selection);
 
 	// Select Font Map into Font DC
-	SelectObject(Fdc, *FntMap);
+	SelectObject(Fdc, FntMap);
 
 	// Gray out bitmap
 	FillRect(Mdc, &ClipArea, (HBRUSH)GetStockObject(GRAY_BRUSH));
@@ -150,7 +150,7 @@ void CreateFontMap()
 	       Mdc, 0, 0, SRCCOPY);
 
 	// Clean up
-	DeleteObject(*FntMap);
+	DeleteObject(FntMap);
 	DeleteObject(mMap);
 	DeleteObject(ClipRgn);
 	DeleteObject(mMap);

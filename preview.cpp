@@ -65,7 +65,7 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	}
 
 	// divide the window into 3 horizontal areas
-	ulWindowHeight = ulWindowHeight / 3;
+	ulWindowHeight /= 3;
 
 	// create a DC for our bitmap -- the source DC for AlphaBlend
 	hdc = CreateCompatibleDC(hdcwnd);
@@ -192,7 +192,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	float RowFactor, ColFactor, U, V;
 	int SrcCol, SrcRow, RowPitch;
 	unsigned char Text[255];
-	HBITMAP *hBMP;
+	HBITMAP hBMP;
 	Font FntImg;
 	RECT glRect;
 	LRESULT lTxt;
@@ -206,6 +206,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	BOOL igr, gr;
 	LPDRAWITEMSTRUCT lpdis;
 	HGDIOBJ original;
+	BLENDFUNCTION bf;      // structure for alpha blending
 
 	static char PText[1024];
 	char Sample[13][128] =
@@ -315,14 +316,22 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		hdcMem = CreateCompatibleDC(lpdis->hDC);
 
-		hBMP = Fnt.DrawFontMap(FALSE, -1);
-		original = SelectObject(hdcMem, *hBMP);
+		hBMP = Fnt.DrawBitmap(hdcMem, FALSE, -1);
+		original = SelectObject(hdcMem, hBMP);
+
+#if 0
+		bf.BlendOp = AC_SRC_OVER;
+		bf.BlendFlags = 0;
+		bf.AlphaFormat = AC_SRC_ALPHA;  // use source alpha
+		bf.SourceConstantAlpha = 0xff;  // opaque (disable constant alpha)
+		AlphaBlend(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), bf);
+#endif
 
 		BitBlt(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, SRCCOPY);
 
 		SelectObject(hdcMem, original);
 
-		DeleteObject(*hBMP);
+		DeleteObject(hBMP);
 		DeleteDC(hdcMem);
 
 		//DrawAlphaBlend(hDlg, lpdis->hDC);

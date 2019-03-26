@@ -2,6 +2,7 @@
 #include "font.h"
 #include "bfg.h"
 #include "utils.h"
+#include "resource.h"
 
 #include "zlib/zlib.h"
 
@@ -48,22 +49,20 @@ Font::Font()
 		WidthMod[loop] = 0;
 	}
 
-	fnt = NULL;
-
-	FntDef.lfHeight = 20;
-	FntDef.lfWidth = 0;
-	FntDef.lfEscapement = 0;
-	FntDef.lfOrientation = 0;
-	FntDef.lfWeight = FW_NORMAL;
-	FntDef.lfItalic = FALSE;
-	FntDef.lfUnderline = FALSE;
-	FntDef.lfStrikeOut = FALSE;
-	FntDef.lfCharSet = DEFAULT_CHARSET;
-	FntDef.lfOutPrecision = OUT_DEFAULT_PRECIS;
-	FntDef.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-	FntDef.lfQuality = NONANTIALIASED_QUALITY;
-	FntDef.lfPitchAndFamily = DEFAULT_PITCH;
-	FntDef.lfFaceName[0] = NULL;
+	lf.lfHeight = 20;
+	lf.lfWidth = 0;
+	lf.lfEscapement = 0;
+	lf.lfOrientation = 0;
+	lf.lfWeight = FW_NORMAL;
+	lf.lfItalic = FALSE;
+	lf.lfUnderline = FALSE;
+	lf.lfStrikeOut = FALSE;
+	lf.lfCharSet = DEFAULT_CHARSET;
+	lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+	lf.lfQuality = NONANTIALIASED_QUALITY;
+	lf.lfPitchAndFamily = DEFAULT_PITCH;
+	lf.lfFaceName[0] = NULL;
 
 	BkCol.Red = 0;
 	BkCol.Green = 0;
@@ -88,7 +87,6 @@ Font::Font()
 
 Font::~Font()
 {
-	DeleteObject(fnt);
 }
 
 int Font::SetSize(int Which, int NewSize)
@@ -282,13 +280,13 @@ long Font::SetFontHeight(long NewHeight)
 		NewHeight = 256;
 	}
 
-	FntDef.lfHeight = NewHeight;
-	return FntDef.lfHeight;
+	lf.lfHeight = NewHeight;
+	return lf.lfHeight;
 }
 
 long Font::GetFontHeight()
 {
-	return FntDef.lfHeight;
+	return lf.lfHeight;
 }
 
 long Font::SetFontWidth(long NewWidth)
@@ -302,18 +300,18 @@ long Font::SetFontWidth(long NewWidth)
 		NewWidth = 256;
 	}
 
-	FntDef.lfWidth = NewWidth;
-	return FntDef.lfWidth;
+	lf.lfWidth = NewWidth;
+	return lf.lfWidth;
 }
 
 long Font::GetFontWidth()
 {
-	return FntDef.lfWidth;
+	return lf.lfWidth;
 }
 
 bool Font::SetFontName(char *NewName)
 {
-	if (lstrcpy(FntDef.lfFaceName, NewName))
+	if (lstrcpy(lf.lfFaceName, NewName))
 	{
 		return true;
 	}
@@ -325,40 +323,40 @@ bool Font::SetFontName(char *NewName)
 
 char *Font::GetFontName()
 {
-	return FntDef.lfFaceName;
+	return lf.lfFaceName;
 }
 
 long Font::SetFontWeight(long NewWeight)
 {
-	FntDef.lfWeight = NewWeight;
-	return FntDef.lfWeight;
+	lf.lfWeight = NewWeight;
+	return lf.lfWeight;
 }
 
 long Font::GetFontWeight()
 {
-	return FntDef.lfWeight;
+	return lf.lfWeight;
 }
 
 long Font::SetFontQuality(long NewQual)
 {
-	FntDef.lfQuality = (BYTE)NewQual;
-	return FntDef.lfQuality;
+	lf.lfQuality = (BYTE)NewQual;
+	return lf.lfQuality;
 }
 
 long Font::GetFontQuality()
 {
-	return FntDef.lfQuality;
+	return lf.lfQuality;
 }
 
 long Font::SetFontItalic(long NewItal)
 {
-	FntDef.lfItalic = (BYTE)NewItal;
-	return FntDef.lfItalic;
+	lf.lfItalic = (BYTE)NewItal;
+	return lf.lfItalic;
 }
 
 long Font::GetFontItalic()
 {
-	return FntDef.lfItalic;
+	return lf.lfItalic;
 }
 
 void Font::SetCol(int Which, BFG_RGB NewCol)
@@ -472,9 +470,9 @@ bool Font::CalcWidths(HDC hdc)
 	if (Test)
 	{
 		for (Letter = 0; Letter != 256; Letter++)
-			BaseWidth[Letter] = (unsigned char)(CharWidth[Letter].abcA +
-			                                    CharWidth[Letter].abcB +
-			                                    CharWidth[Letter].abcC);
+		{
+			BaseWidth[Letter] = (unsigned char)(CharWidth[Letter].abcA + CharWidth[Letter].abcB + CharWidth[Letter].abcC);
+		}
 	}
 	else
 	{
@@ -482,130 +480,107 @@ bool Font::CalcWidths(HDC hdc)
 		Test = GetCharWidth32(hdc, 0, 255, nttWidth);
 
 		if (Test)
+		{
 			for (Letter = 0; Letter != 256; Letter++)
 			{
 				BaseWidth[Letter] = (unsigned char)nttWidth[Letter];
 			}
+		}
 	}
 
 	return true;
 }
 
-HBITMAP *Font::DrawFontMap(int Flags, int Sel)
+HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 {
-	HDC wDC, mDC;
-	HBITMAP *fDIB;
-	BITMAPINFO BMDat;
-	HBRUSH Brush;
-	HPEN Pen;
+	HBITMAP hBitmap;
+	BITMAPINFO bmi;
+	HPEN hPen;
+	HBRUSH hBrush;
+	HFONT hFont;
 	int RowDex, ColDex, Letter;
 	HRGN ClipRgn;
 	RECT CharArea;
 	char Symbol[2];
 	int eVal;
+	unsigned char *img;
 
-	// Create Device context
-	wDC = CreateDC("DISPLAY", NULL, NULL, NULL);
-	mDC = CreateCompatibleDC(wDC);
-
-	if (!wDC || !mDC)
+	// create device context
+	hdc = CreateCompatibleDC(hdc);
+	if (!hdc)
 	{
 		return NULL;
 	}
 
-	// Create bitmap for font rendering
-	fDIB = new HBITMAP;
-	if (!fDIB)
+	ZeroMemory(&bmi, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = MapWidth;
+	bmi.bmiHeader.biHeight = MapHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 32;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = (MapWidth * MapHeight) * 4;
+	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void **)&img, NULL, 0);
+	SelectObject(hdc, hBitmap);
+
+	// draw background
+	if (flags & DFM_ALPHA)
 	{
-		return NULL;
-	}
-
-	BMDat.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	BMDat.bmiHeader.biWidth = MapWidth;
-	BMDat.bmiHeader.biHeight = MapHeight;
-	BMDat.bmiHeader.biPlanes = 1;
-	BMDat.bmiHeader.biBitCount = 24;
-	BMDat.bmiHeader.biCompression = BI_RGB;
-	BMDat.bmiHeader.biSizeImage = (MapWidth * MapHeight) * 3;
-
-	*fDIB = CreateDIBSection(mDC, &BMDat, DIB_RGB_COLORS, NULL, NULL, 0);
-
-	if (!fDIB)
-	{
-		return NULL;
-	}
-
-	if (!SelectObject(mDC, *fDIB))
-	{
-		return NULL;
-	}
-
-	// Fill background
-	if (Flags & DFM_ALPHA)
-	{
-		Brush = CreateSolidBrush(RGB(0, 0, 0));
-		Pen = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
+		hPen = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
+		hBrush = CreateSolidBrush(RGB(0, 0, 0));
 	}
 	else
 	{
-		Brush = CreateSolidBrush(RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
-		Pen = CreatePen(PS_SOLID, 0, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
+		hPen = CreatePen(PS_SOLID, 0, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
+		hBrush = CreateSolidBrush(RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
 	}
+	SelectObject(hdc, hPen);
+	SelectObject(hdc, hBrush);
 
-	SelectObject(mDC, Brush);
-	SelectObject(mDC, Pen);
+	Rectangle(hdc, 0, 0, MapWidth, MapHeight);
 
-	Rectangle(mDC, 0, 0, MapWidth, MapHeight);
+	DeleteObject(hBrush);
+	DeleteObject(hPen);
 
-	DeleteObject(Pen);
-	DeleteObject(Brush);
+	// draw selection
+	hPen = CreatePen(PS_SOLID, 0, RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
+	hBrush = CreateSolidBrush(RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
 
-	// Draw Selection
-	Pen = CreatePen(PS_SOLID, 0, RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
-	Brush = CreateSolidBrush(RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
-
-	if (Sel > -1)
+	if (sel > -1)
 	{
-		SelectObject(mDC, Pen);
-		SelectObject(mDC, Brush);
-		RowDex = (Sel / (MapWidth / CellWidth));
-		ColDex = (Sel - ((MapWidth / CellWidth) * RowDex));
+		SelectObject(hdc, hPen);
+		SelectObject(hdc, hBrush);
+		RowDex = (sel / (MapWidth / CellWidth));
+		ColDex = (sel - ((MapWidth / CellWidth) * RowDex));
 		ColDex *= CellWidth;
 		RowDex *= CellHeight;
-		Rectangle(mDC, ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
+		Rectangle(hdc, ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
 	}
 
-	DeleteObject(Brush);
-	DeleteObject(Pen);
+	DeleteObject(hBrush);
+	DeleteObject(hPen);
 
-	// Draw letters
-	// Create the font
-	if (fnt)
+	// draw characters
+	hFont = CreateFontIndirect(&lf);
+	SelectObject(hdc, hFont);
+
+	CalcWidths(hdc);
+
+	if (flags & DFM_ALPHA)
 	{
-		DeleteObject(fnt);
-	}
-
-	fnt = CreateFontIndirect(&FntDef);
-
-	SelectObject(mDC, fnt);
-
-	CalcWidths(mDC);
-
-	if (Flags & DFM_ALPHA)
-	{
-		SetTextColor(mDC, RGB(255, 255, 255));
-		SetBkColor(mDC, RGB(0, 0, 0));
+		SetTextColor(hdc, RGB(255, 255, 255));
+		SetBkColor(hdc, RGB(0, 0, 0));
 	}
 	else
 	{
-		SetTextColor(mDC, RGB(TextCol.Red, TextCol.Green, TextCol.Blue));
-		SetBkColor(mDC, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
+		SetTextColor(hdc, RGB(TextCol.Red, TextCol.Green, TextCol.Blue));
+		SetBkColor(hdc, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
 	}
 
-	SetBkMode(mDC, TRANSPARENT);
+	SetBkMode(hdc, TRANSPARENT);
 
-	Pen = CreatePen(PS_SOLID, 0, RGB(WidthCol.Red, WidthCol.Green, WidthCol.Blue));
-	SelectObject(mDC, Pen);
+	hPen = CreatePen(PS_SOLID, 0, RGB(WidthCol.Red, WidthCol.Green, WidthCol.Blue));
+	SelectObject(hdc, hPen);
 
 	Letter = BaseChar;
 
@@ -615,14 +590,14 @@ HBITMAP *Font::DrawFontMap(int Flags, int Sel)
 		{
 			// Set Clipping Region
 			ClipRgn = CreateRectRgn(ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
-			SelectClipRgn(mDC, ClipRgn);
+			SelectClipRgn(hdc, ClipRgn);
 
 			// Draw width marker
-			if (Flags & DFM_WIDTHLINE)
+			if (flags & DFM_WIDTHLINE)
 			{
 				eVal = BaseWidth[Letter] + WidthMod[Letter] + gWidthMod;
-				MoveToEx(mDC, ColDex + eVal, RowDex, NULL);
-				LineTo(mDC, ColDex + eVal, RowDex + CellHeight);
+				MoveToEx(hdc, ColDex + eVal, RowDex, NULL);
+				LineTo(hdc, ColDex + eVal, RowDex + CellHeight);
 			}
 
 			// Render Char
@@ -632,41 +607,134 @@ HBITMAP *Font::DrawFontMap(int Flags, int Sel)
 			CharArea.bottom = RowDex + CellHeight;
 			wsprintf(Symbol, "%c", Letter);
 			Letter++;
-			DrawText(mDC, Symbol, -1, &CharArea, DT_LEFT | DT_NOPREFIX | DT_NOCLIP);
+			DrawText(hdc, Symbol, -1, &CharArea, DT_LEFT | DT_NOPREFIX | DT_NOCLIP);
 
 			// Remove clip region
-			SelectClipRgn(mDC, NULL);
+			SelectClipRgn(hdc, NULL);
 			DeleteObject(ClipRgn);
 		}
 	}
 
-	DeleteObject(Pen);
+	DeleteObject(hPen);
 
 	// Draw grid lines
-	Pen = CreatePen(PS_SOLID, 0, RGB(GridCol.Red, GridCol.Green, GridCol.Blue));
+	hPen = CreatePen(PS_SOLID, 0, RGB(GridCol.Red, GridCol.Green, GridCol.Blue));
 
-	if (Flags & DFM_GRIDLINES)
+	if (flags & DFM_GRIDLINES)
 	{
-		SelectObject(mDC, Pen);
+		SelectObject(hdc, hPen);
 
 		for (RowDex = CellHeight - 1; RowDex < MapHeight; RowDex += CellHeight)
 		{
-			MoveToEx(mDC, 0, RowDex, NULL);
-			LineTo(mDC, MapWidth, RowDex);
+			MoveToEx(hdc, 0, RowDex, NULL);
+			LineTo(hdc, MapWidth, RowDex);
 		}
 
 		for (ColDex = CellWidth - 1; ColDex < MapWidth; ColDex += CellWidth)
 		{
-			MoveToEx(mDC, ColDex, 0, NULL);
-			LineTo(mDC, ColDex, MapHeight);
+			MoveToEx(hdc, ColDex, 0, NULL);
+			LineTo(hdc, ColDex, MapHeight);
 		}
 	}
 
-	DeleteObject(Pen);
-	DeleteDC(wDC);
-	DeleteDC(mDC);
+	DeleteObject(hPen);
 
-	return fDIB;
+	// insert alpha channel
+	HBITMAP hAlphaBitmap = DrawAlphaBitmap(hdc, hFont);
+
+	DIBSECTION bmInfo;
+	if (!GetObject(hAlphaBitmap, sizeof(DIBSECTION), &bmInfo))
+	{
+		return false;
+	}
+
+	unsigned char *a = img + 3;
+	unsigned char *b = (unsigned char *)bmInfo.dsBm.bmBits;
+	for (int i = 0; i < MapWidth * MapHeight; i++)
+	{
+		*a = *b;
+		a += 4;
+		b++;
+	}
+
+	DeleteObject(hFont);
+	DeleteDC(hdc);
+
+	return hBitmap;
+}
+
+HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
+{
+	HBITMAP hBitmap;
+	BITMAPINFO bmi;
+	HPEN hPen;
+	HBRUSH hBrush;
+	int RowDex, ColDex, Letter;
+	HRGN ClipRgn;
+	RECT CharArea;
+	char Symbol[2];
+	unsigned char *img;
+
+	ZeroMemory(&bmi, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = MapWidth;
+	bmi.bmiHeader.biHeight = MapHeight;
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = 8;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = MapWidth * MapHeight;
+	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void **)&img, NULL, 0);
+	SelectObject(hdc, hBitmap);
+
+	// draw background
+	hPen = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
+	hBrush = CreateSolidBrush(RGB(0, 0, 0));
+	SelectObject(hdc, hPen);
+	SelectObject(hdc, hBrush);
+
+	Rectangle(hdc, 0, 0, MapWidth, MapHeight);
+
+	DeleteObject(hBrush);
+	DeleteObject(hPen);
+
+	// draw characters
+	SelectObject(hdc, hFnt);
+
+	CalcWidths(hdc);
+
+	SetTextColor(hdc, RGB(255, 255, 255));
+	SetBkMode(hdc, TRANSPARENT);
+
+	Letter = BaseChar;
+	for (RowDex = 0; RowDex < (MapHeight - CellHeight) + 1; RowDex += CellHeight)
+	{
+		for (ColDex = 0; ColDex < (MapWidth - CellWidth) + 1 && Letter < 256; ColDex += CellWidth)
+		{
+			// Set Clipping Region
+			ClipRgn = CreateRectRgn(ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
+			SelectClipRgn(hdc, ClipRgn);
+
+			// Render Char
+			CharArea.left = ColDex + HMod[Letter] + gHMod;
+			CharArea.right = ColDex + CellWidth;
+			CharArea.top = RowDex + VMod[Letter] + gVMod;
+			CharArea.bottom = RowDex + CellHeight;
+			wsprintf(Symbol, "%c", Letter);
+			Letter++;
+			DrawText(hdc, Symbol, -1, &CharArea, DT_LEFT | DT_NOPREFIX | DT_NOCLIP);
+
+			// Remove clip region
+			SelectClipRgn(hdc, NULL);
+			DeleteObject(ClipRgn);
+		}
+	}
+
+	return hBitmap;
+}
+
+LPLOGFONT Font::GetLogicalFont()
+{
+	return &lf;
 }
 
 int Font::LoadConfig(const char *fname)
@@ -714,9 +782,9 @@ int Font::LoadConfig(const char *fname)
 	memcpy(&CellWidth, &dat[14], 4);
 	memcpy(&CellHeight, &dat[18], 4);
 	memcpy(&tVal, &dat[22], 4);
-	FntDef.lfHeight = tVal;
+	lf.lfHeight = tVal;
 	memcpy(&tVal, &dat[26], 4);
-	FntDef.lfWidth = tVal;
+	lf.lfWidth = tVal;
 	memcpy(&Flags, &dat[30], 4);
 	memcpy(&GridCol, &dat[34], sizeof(GridCol));
 	memcpy(&WidthCol, &dat[46], sizeof(WidthCol));
@@ -746,9 +814,9 @@ bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 	cfgfile.write((const char *)&MapHeight, sizeof(int));
 	cfgfile.write((const char *)&CellWidth, sizeof(int));
 	cfgfile.write((const char *)&CellHeight, sizeof(int));
-	tVal = (int)FntDef.lfHeight;
+	tVal = (int)lf.lfHeight;
 	cfgfile.write((const char *)&tVal, sizeof(int));
-	tVal = (int)FntDef.lfWidth;
+	tVal = (int)lf.lfWidth;
 	cfgfile.write((const char *)&tVal, sizeof(int));
 	if (Grid)
 	{
@@ -810,86 +878,37 @@ bool Font::SaveFont(int Format, char *fname, int flags)
 
 int Font::ExportMap(char *fname, int fmt)
 {
-	HBITMAP *hBMP;
-	FontFileHeader Hdr;
-	DIBSECTION bmInfo;
+	HWND hImgWin;
+	HDC hdc;
+	HBITMAP hBitmap;
 	int Result;
 
-	Init_SBM_Image();
+	hImgWin = GetDlgItem(g_hMain, IMG_TEXT);
+	hdc = GetDC(hImgWin);
 
-	// Populate header
-	Hdr.ID1 = 0xBF;
-	Hdr.ID2 = 0xF2;
-	Hdr.BPP = 24;
-	Hdr.ImageWidth = MapWidth;
-	Hdr.ImageHeight = MapHeight;
-	Hdr.CellHeight = CellHeight;
-	Hdr.CellWidth = CellHeight;
-	Hdr.StartPoint = BaseChar;
+	hBitmap = DrawBitmap(hdc, 0, -1);
 
-	// Create the SBM image
-	Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
-
-	// Render the font image
-	hBMP = DrawFontMap(0, -1);
-
-	// Grab the bitmap information
-	if (!GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo))
+	DIBSECTION bmInfo;
+	if (!GetObject(hBitmap, sizeof(DIBSECTION), &bmInfo))
 	{
 		return false;
 	}
 
-	// Copy bitmap to SBM
-	memcpy(GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
-
-	// Free the bitmap
-	delete hBMP;
-
-	FlipImg();
-
-#if 0
-	// Add in alpha channel if required
-	if (fmt == EXPORT_TGA32)
-	{
-		// Render new alpha fontmap
-		hBMP = DrawFontMap(DFM_ALPHA, -1);
-
-		// Create the SBM alpha image
-		AlphaImg.Create(Hdr.ImageWidth, Hdr.ImageHeight, Hdr.BPP);
-
-		// Get RGB data ptr from Img
-		if (!GetObject(*hBMP, sizeof(DIBSECTION), &bmInfo))
-		{
-			return false;
-		}
-
-		// Copy bitmap to alpha SBM
-		memcpy(AlphaImg.GetImg(), bmInfo.dsBm.bmBits, (Hdr.ImageWidth * Hdr.ImageHeight) * (Hdr.BPP / 8));
-
-		// Free the bitmap
-		delete hBMP;
-
-		// Grayscale the alphamap
-		AlphaImg.Grayscale();
-
-		// Insert alpha channel into font map
-		FntImg.InsertAlpha(AlphaImg.GetImg());
-	}
-#endif
+	stbi_flip_vertically_on_write(1);
 
 	switch (fmt)
 	{
 	case EXPORT_BMP:
-		Result = stbi_write_bmp(fname, Width, Height, (BPP / 8), ImgData) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		Result = stbi_write_bmp(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
 	case EXPORT_TGA:
 	case EXPORT_TGA32:
-		Result = stbi_write_tga(fname, Width, Height, (BPP / 8), ImgData) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		Result = stbi_write_tga(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
 	case EXPORT_PNG:
-		Result = stbi_write_png(fname, Width, Height, (BPP / 8), ImgData, Width * (BPP / 8)) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		Result = stbi_write_png(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits, MapWidth * (32 / 8)) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
 		break;
 
 	default:
@@ -897,7 +916,7 @@ int Font::ExportMap(char *fname, int fmt)
 		break;
 	}
 
-	Deinit_SBM_Image();
+	ReleaseDC(hImgWin, hdc);
 
 	return Result;
 }
@@ -995,11 +1014,11 @@ bool Font::ImportData(char *fname)
 	Index = 0;
 	while (data[datptr] != '\n')
 	{
-		cfg->FntDef.lfFaceName[Index] = data[datptr];
+		cfg->lf.lfFaceName[Index] = data[datptr];
 		++Index;
 		++datptr;
 	}
-	cfg->FntDef.lfFaceName[Index] = NULL;
+	cfg->lf.lfFaceName[Index] = NULL;
 
 	// Font Height
 	while (data[datptr] != ',')
@@ -1008,7 +1027,7 @@ bool Font::ImportData(char *fname)
 	}
 
 	datptr++;
-	sscanf(&data[datptr], "%d", &(cfg->FntDef.lfHeight));
+	sscanf(&data[datptr], "%d", &(cfg->lf.lfHeight));
 
 	// Font Width
 	while (data[datptr] != ',')
@@ -1017,7 +1036,7 @@ bool Font::ImportData(char *fname)
 	}
 
 	datptr++;
-	sscanf(&data[datptr], "%d", &(cfg->FntDef.lfWidth));
+	sscanf(&data[datptr], "%d", &(cfg->lf.lfWidth));
 
 	// Char Widths
 	for (Index = 0; Index != 256; ++Index)
@@ -1096,7 +1115,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->FntDef.lfWeight = Val;
+	cfg->lf.lfWeight = Val;
 
 	// Italic Value
 	while (data[datptr] != ',')
@@ -1106,7 +1125,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->FntDef.lfItalic = Val;
+	cfg->lf.lfItalic = Val;
 
 	// AntiAlias Value
 	while (data[datptr] != ',')
@@ -1116,7 +1135,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->FntDef.lfQuality = Val;
+	cfg->lf.lfQuality = Val;
 
 	delete[] data;
 #endif
@@ -1140,9 +1159,9 @@ bool Font::ExportCSVData(char *fname)
 	out << "Cell Width," << CellWidth << "\n";
 	out << "Cell Height," << CellHeight << "\n";
 	out << "Start Char," << (int)BaseChar << "\n";
-	out << "Font Name," << FntDef.lfFaceName << "\n";
-	out << "Font Height," << FntDef.lfHeight << "\n";
-	out << "Font Width (0 is default)," << FntDef.lfWidth << "\n";
+	out << "Font Name," << lf.lfFaceName << "\n";
+	out << "Font Height," << lf.lfHeight << "\n";
+	out << "Font Width (0 is default)," << lf.lfWidth << "\n";
 
 	for (Loop = 0; Loop != 256; ++Loop)
 	{
@@ -1167,9 +1186,9 @@ bool Font::ExportCSVData(char *fname)
 	out << "Global Width Offset," << (int)gWidthMod << "\n";
 	out << "Global X Offset," << (int)gHMod << "\n";
 	out << "Global Y Offset," << (int)gVMod << "\n";
-	out << "Bold," << FntDef.lfWeight << "\n";
-	out << "Italic," << (int)FntDef.lfItalic << "\n";
-	out << "AntiAlias," << (int)FntDef.lfQuality << "\n";
+	out << "Bold," << lf.lfWeight << "\n";
+	out << "Italic," << (int)lf.lfItalic << "\n";
+	out << "AntiAlias," << (int)lf.lfQuality << "\n";
 
 	out.close();
 
@@ -1194,254 +1213,4 @@ bool Font::IsPower(int TestValue)
 	}
 
 	return Ret;
-}
-
-void Font::Init_SBM_Image()
-{
-	Width = Height = 0;
-	FileSize = ImageSize = 0;
-	BPP = Encode = 0;
-	ImgData = PalData = FileData = NULL;
-}
-
-void Font::Deinit_SBM_Image()
-{
-	FreeMem((void **)&ImgData);
-	FreeMem((void **)&PalData);
-	FreeMem((void **)&FileData);
-}
-
-// Create an empty image with specified size and colour depth
-int Font::Create(int width, int height, int bpp)
-{
-	switch (bpp)
-	{
-	case 24:
-	case 32:
-		FreeMem((void **)&ImgData);
-		FreeMem((void **)&PalData);
-		FreeMem((void **)&FileData);
-
-		ImgData = new unsigned char[(width * height) * (bpp / 8)];
-
-		if (ImgData == NULL)
-		{
-			return SBM_ERR_MEM_FAIL;
-		}
-
-		Width = width;
-		Height = height;
-		BPP = bpp;
-
-		break;
-
-	default:
-		return SBM_ERR_UNSUPPORTED;
-	}
-
-	return SBM_OK;
-}
-
-void Font::Reset()
-{
-	Width = Height = 0;
-	FileSize = ImageSize = 0;
-	BPP = Encode = 0;
-
-	FreeMem((void **)&ImgData);
-	FreeMem((void **)&PalData);
-	FreeMem((void **)&FileData);
-}
-
-void Font::FreeMem(void **Ptr)
-{
-	if (*Ptr != NULL)
-	{
-		delete [] *Ptr;
-		*Ptr = NULL;
-	}
-}
-
-void Font::BGRtoRGB()
-{
-	unsigned long Index, nPixels;
-	unsigned char *bCur;
-	unsigned char bTemp;
-	int iPixelSize;
-
-	// Set ptr to start of image
-	bCur = ImgData;
-
-	// Calc number of pixels
-	nPixels = Width * Height;
-
-	// Get pixel size in bytes
-	iPixelSize = BPP / 8;
-
-	for (Index = 0; Index != nPixels; Index++) // For each pixel
-	{
-		bTemp = *bCur;    // Get Blue value
-		*bCur = *(bCur + 2); // Swap red value into first position
-		*(bCur + 2) = bTemp; // Write back blue to last position
-
-		bCur += iPixelSize; // Jump to next pixel
-	}
-}
-
-int Font::InsertAlpha(unsigned char *Alpha)
-{
-	unsigned char *NewImg;
-	int PixLoop;
-	int RGBPtr, ImgPtr;
-
-	if (BPP != 24)
-	{
-		return SBM_ERR_UNSUPPORTED;
-	}
-
-	NewImg = new unsigned char[(Width * Height) * 4];
-
-	if (NewImg == NULL)
-	{
-		return SBM_ERR_MEM_FAIL;
-	}
-
-	for (PixLoop = 0, RGBPtr = 0, ImgPtr = 0; PixLoop != (Width * Height); ++PixLoop)
-	{
-		NewImg[ImgPtr] = ImgData[RGBPtr];
-		NewImg[ImgPtr + 1] = ImgData[RGBPtr + 1];
-		NewImg[ImgPtr + 2] = ImgData[RGBPtr + 2];
-		NewImg[ImgPtr + 3] = Alpha[PixLoop];
-		RGBPtr += 3;
-		ImgPtr += 4;
-	}
-
-	FreeMem((void **)&ImgData);
-	ImgData = NewImg;
-	BPP = 32;
-	ImageSize = ((Width * Height) * (BPP / 8));
-
-	return SBM_OK;
-}
-
-void Font::FlipImg()
-{
-	unsigned char bTemp;
-	unsigned char *pLine1, *pLine2;
-	int iLineLen, iIndex;
-
-	iLineLen = Width * (BPP / 8);
-	pLine1 = ImgData;
-	pLine2 = &ImgData[iLineLen * (Height - 1)];
-
-	for (; pLine1 < pLine2; pLine2 -= (iLineLen * 2))
-	{
-		for (iIndex = 0; iIndex != iLineLen; pLine1++, pLine2++, iIndex++)
-		{
-			bTemp = *pLine1;
-			*pLine1 = *pLine2;
-			*pLine2 = bTemp;
-		}
-	}
-}
-
-int Font::Grayscale()
-{
-	unsigned char *NewData;
-	unsigned long ImgPtr, AlphaPtr;
-	float AlphaVal;
-
-	NewData = new unsigned char[Width * Height];
-
-	if (NewData == NULL)
-	{
-		return SBM_ERR_MEM_FAIL;
-	}
-
-	switch (BPP)
-	{
-	case 24:
-		ImageSize = Width * Height;
-		for (ImgPtr = 0, AlphaPtr = 0; AlphaPtr < ImageSize; AlphaPtr++, ImgPtr += 3)
-		{
-			AlphaVal = ImgData[ImgPtr] * 0.3f;
-			AlphaVal += ImgData[ImgPtr + 1] * 0.59f;
-			AlphaVal += ImgData[ImgPtr + 2] * 0.11f;
-			NewData[AlphaPtr] = (unsigned char)AlphaVal;
-		}
-
-		delete [] ImgData;
-		ImgData = NewData;
-		BPP = 8;
-		break;
-
-	default:
-		delete [] NewData;
-		return SBM_ERR_UNSUPPORTED;
-		break;
-	}
-
-	return SBM_OK;
-}
-
-int Font::InvertCol()
-{
-	unsigned long Loop;
-
-	switch (BPP)
-	{
-	case 8:
-		if (PalData == NULL) // Grayscale image
-		{
-			for (Loop = 0; Loop < ImageSize; ++Loop)
-			{
-				ImgData[Loop] = 255 - ImgData[Loop];
-			}
-		}
-		else
-		{
-			return SBM_ERR_UNSUPPORTED;
-		}
-		break;
-
-	default:
-		return SBM_ERR_UNSUPPORTED;
-		break;
-	}
-
-	return SBM_OK;
-}
-
-int Font::Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB, unsigned char SatR, unsigned char SatG, unsigned char SatB)
-{
-	long Loop, PixCount;
-
-	PixCount = (Width * Height);
-
-	switch (BPP)
-	{
-	case 24:
-		PixCount *= 3;
-		for (Loop = 0; Loop < PixCount; Loop += 3)
-		{
-			if (ImgData[Loop] != KeyR || ImgData[Loop + 1] != KeyG || ImgData[Loop + 2] != KeyB)
-			{
-				ImgData[Loop] = SatR;
-				ImgData[Loop + 1] = SatG;
-				ImgData[Loop + 2] = SatB;
-			}
-		}
-		break;
-
-	default:
-		return SBM_ERR_UNSUPPORTED;
-		break;
-	}
-
-	return SBM_OK;
-}
-
-unsigned char *Font::GetImg()
-{
-	return ImgData;
 }

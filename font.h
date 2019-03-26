@@ -35,7 +35,9 @@ public:
 	char *GetFontName();
 	bool SetFontName(char *);
 	bool CalcWidths(HDC);
-	HBITMAP *DrawFontMap(int Flags, int Sel);
+	HBITMAP DrawBitmap(HDC hdc, int flags, int sel);
+
+	LPLOGFONT GetLogicalFont();
 
 	int  LoadConfig(const char *fname);
 	bool SaveConfig(const char *fname, bool Grid, bool Width_);
@@ -49,26 +51,10 @@ public:
 	void SetCol(int Which, BFG_RGB Col);
 	BFG_RGB GetCol(int Which);
 
-	// SBM_Image stuff
-	void Init_SBM_Image();
-	void Deinit_SBM_Image();
-	int Create(int width, int height, int bpp);
-	void Reset();                  // Clear Image
-	unsigned char *GetImg();       // Return a pointer to image data
-	
-	// Utility Functions
-	void FlipImg();   // Invert image vertically
-	int InsertAlpha(unsigned char *Alpha); // Adds an alpha channel to image
-	int Grayscale();  // Converts image to 8 bit gray
-	int InvertCol();  // Inverts colour values
-	void BGRtoRGB();  // Convert between RGB and BGR formats
-
-	// Sets all non-KeyCol pixels to SatCol
-	int Saturate(unsigned char KeyR, unsigned char KeyG, unsigned char KeyB, unsigned char SatR, unsigned char SatG, unsigned char SatB);
-
 private:
-	LOGFONT FntDef;
-	HFONT fnt;
+	HBITMAP DrawAlphaBitmap(HDC hdc, HFONT hFnt);
+
+	LOGFONT lf;
 	int  MapWidth, MapHeight;
 	int  CellHeight, CellWidth;
 	unsigned char BaseChar;
@@ -81,15 +67,6 @@ private:
 
 	bool IsPower(int TestVal);
 	bool ExportCSVData(char *fname);
-
-	// SBM_Image stuff
-	int Width, Height;
-	int BPP, Encode, Planes;
-	unsigned long FileSize, ImageSize, Offset;
-	unsigned char *ImgData, *PalData, *FileData;
-	short BPL;
-
-	void FreeMem(void **Ptr); // Safe delete []
 };
 
 #endif
