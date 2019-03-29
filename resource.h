@@ -16,14 +16,8 @@
 #define DLG_PREVIEW                     115
 #define RES_BMP_BACKGROUND              122
 #define IMG_TEXT                        1000
-#define IDC_COMBO1                      1001
-#define CBO_FONTS                       1001
 #define CBO_CFG_ITEM                    1001
-#define IDC_CHECK1                      1002
-#define CHK_BOLD                        1002
 #define CHK_SAVEOPT_SATURATE            1002
-#define IDC_CHECK2                      1003
-#define CHK_ITAL                        1003
 #define CHK_CFG_WIDTH                   1003
 #define CHK_SAVEOPT_INVERT              1003
 #define IDC_SPIN1                       1004
@@ -106,6 +100,9 @@
 #define IDC_LIST1                       1049
 #define LST_CREDITS                     1049
 #define RES_PIC_PREVIEW                 1050
+#define IDC_BUTTON1                     1051
+#define IDC_SLIDER1                     1052
+#define IDC_EDIT7                       1053
 #define ID_FILE_SAVEAS                  40004
 #define ID_FILE_EXIT                    40005
 #define ID_FONT_RESET                   40006
@@ -145,7 +142,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        123
 #define _APS_NEXT_COMMAND_VALUE         40051
-#define _APS_NEXT_CONTROL_VALUE         1051
+#define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           103
 #endif
 #endif

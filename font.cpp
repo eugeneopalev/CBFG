@@ -30,65 +30,6 @@ static unsigned char *zlib_compress(unsigned char *data, int data_len, int *out_
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
-Font::Font()
-{
-	BaseChar = 32;
-
-	MapWidth = 256;
-	MapHeight = 256;
-	CellHeight = 32;
-	CellWidth = 32;
-	gHMod = 0;
-	gVMod = 0;
-	gWidthMod = 0;
-
-	for (int loop = 0; loop != 256; loop++)
-	{
-		HMod[loop] = 0;
-		VMod[loop] = 0;
-		WidthMod[loop] = 0;
-	}
-
-	lf.lfHeight = 20;
-	lf.lfWidth = 0;
-	lf.lfEscapement = 0;
-	lf.lfOrientation = 0;
-	lf.lfWeight = FW_NORMAL;
-	lf.lfItalic = FALSE;
-	lf.lfUnderline = FALSE;
-	lf.lfStrikeOut = FALSE;
-	lf.lfCharSet = DEFAULT_CHARSET;
-	lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
-	lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
-	lf.lfQuality = NONANTIALIASED_QUALITY;
-	lf.lfPitchAndFamily = DEFAULT_PITCH;
-	lf.lfFaceName[0] = NULL;
-
-	BkCol.Red = 0;
-	BkCol.Green = 0;
-	BkCol.Blue = 0;
-
-	TextCol.Red = 255;
-	TextCol.Green = 255;
-	TextCol.Blue = 255;
-
-	GridCol.Red = 170;
-	GridCol.Green = 0;
-	GridCol.Blue = 170;
-
-	WidthCol.Red = 170;
-	WidthCol.Green = 170;
-	WidthCol.Blue = 0;
-
-	SelCol.Red = 0;
-	SelCol.Green = 154;
-	SelCol.Blue = 0;
-}
-
-Font::~Font()
-{
-}
-
 int Font::SetSize(int Which, int NewSize)
 {
 	switch (Which)
@@ -280,13 +221,13 @@ long Font::SetFontHeight(long NewHeight)
 		NewHeight = 256;
 	}
 
-	lf.lfHeight = NewHeight;
-	return lf.lfHeight;
+	lf_.lfHeight = NewHeight;
+	return lf_.lfHeight;
 }
 
 long Font::GetFontHeight()
 {
-	return lf.lfHeight;
+	return lf_.lfHeight;
 }
 
 long Font::SetFontWidth(long NewWidth)
@@ -300,18 +241,18 @@ long Font::SetFontWidth(long NewWidth)
 		NewWidth = 256;
 	}
 
-	lf.lfWidth = NewWidth;
-	return lf.lfWidth;
+	lf_.lfWidth = NewWidth;
+	return lf_.lfWidth;
 }
 
 long Font::GetFontWidth()
 {
-	return lf.lfWidth;
+	return lf_.lfWidth;
 }
 
 bool Font::SetFontName(char *NewName)
 {
-	if (lstrcpy(lf.lfFaceName, NewName))
+	if (lstrcpy(lf_.lfFaceName, NewName))
 	{
 		return true;
 	}
@@ -323,113 +264,46 @@ bool Font::SetFontName(char *NewName)
 
 char *Font::GetFontName()
 {
-	return lf.lfFaceName;
-}
-
-long Font::SetFontWeight(long NewWeight)
-{
-	lf.lfWeight = NewWeight;
-	return lf.lfWeight;
-}
-
-long Font::GetFontWeight()
-{
-	return lf.lfWeight;
+	return lf_.lfFaceName;
 }
 
 long Font::SetFontQuality(long NewQual)
 {
-	lf.lfQuality = (BYTE)NewQual;
-	return lf.lfQuality;
+	lf_.lfQuality = (BYTE)NewQual;
+	return lf_.lfQuality;
 }
 
 long Font::GetFontQuality()
 {
-	return lf.lfQuality;
+	return lf_.lfQuality;
 }
 
-long Font::SetFontItalic(long NewItal)
+void Font::SetCol(int Which, COLORREF NewCol)
 {
-	lf.lfItalic = (BYTE)NewItal;
-	return lf.lfItalic;
-}
-
-long Font::GetFontItalic()
-{
-	return lf.lfItalic;
-}
-
-void Font::SetCol(int Which, BFG_RGB NewCol)
-{
-	BFG_RGB *Tgt;
-
 	switch (Which)
 	{
 	case GRIDCOL:
-		Tgt = &GridCol;
+		GridCol = NewCol;
 		break;
 
 	case WIDTHCOL:
-		Tgt = &WidthCol;
+		WidthCol = NewCol;
 		break;
 
 	case SELCOL:
-		Tgt = &SelCol;
-		break;
-
-	case TEXTCOL:
-		Tgt = &TextCol;
+		SelCol = NewCol;
 		break;
 
 	case BACKCOL:
-		Tgt = &BkCol;
+		BkCol = NewCol;
 		break;
 
 	default:
 		return;
 	}
-
-	Tgt->Red = NewCol.Red;
-	Tgt->Green = NewCol.Green;
-	Tgt->Blue = NewCol.Blue;
 }
 
-void Font::SetCol(int Which, unsigned char Red, unsigned char Green, unsigned char Blue)
-{
-	BFG_RGB *Tgt;
-
-	switch (Which)
-	{
-	case GRIDCOL:
-		Tgt = &GridCol;
-		break;
-
-	case WIDTHCOL:
-		Tgt = &WidthCol;
-		break;
-
-	case SELCOL:
-		Tgt = &SelCol;
-		break;
-
-	case TEXTCOL:
-		Tgt = &TextCol;
-		break;
-
-	case BACKCOL:
-		Tgt = &BkCol;
-		break;
-
-	default:
-		return;
-	}
-
-	Tgt->Red = Red;
-	Tgt->Green = Green;
-	Tgt->Blue = Blue;
-}
-
-BFG_RGB Font::GetCol(int Which)
+COLORREF Font::GetCol(int Which)
 {
 	switch (Which)
 	{
@@ -443,10 +317,6 @@ BFG_RGB Font::GetCol(int Which)
 
 	case SELCOL:
 		return SelCol;
-		break;
-
-	case TEXTCOL:
-		return TextCol;
 		break;
 
 	case BACKCOL:
@@ -495,8 +365,6 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 {
 	HBITMAP hBitmap;
 	BITMAPINFO bmi;
-	HPEN hPen;
-	HBRUSH hBrush;
 	HFONT hFont;
 	int RowDex, ColDex, Letter;
 	HRGN ClipRgn;
@@ -507,11 +375,14 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 
 	// create device context
 	hdc = CreateCompatibleDC(hdc);
-	if (!hdc)
+	if (hdc == NULL)
 	{
 		return NULL;
 	}
+	SelectObject(hdc, GetStockObject(DC_PEN));
+	SelectObject(hdc, GetStockObject(DC_BRUSH));
 
+	// create bitmap
 	ZeroMemory(&bmi, sizeof(bmi));
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	bmi.bmiHeader.biWidth = MapWidth;
@@ -526,30 +397,21 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	// draw background
 	if (flags & DFM_ALPHA)
 	{
-		hPen = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
-		hBrush = CreateSolidBrush(RGB(0, 0, 0));
+		SetDCPenColor(hdc, RGB(0, 0, 0));
+		SetDCBrushColor(hdc, RGB(0, 0, 0));
 	}
 	else
 	{
-		hPen = CreatePen(PS_SOLID, 0, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
-		hBrush = CreateSolidBrush(RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
+		SetDCPenColor(hdc, BkCol);
+		SetDCBrushColor(hdc, BkCol);
 	}
-	SelectObject(hdc, hPen);
-	SelectObject(hdc, hBrush);
-
 	Rectangle(hdc, 0, 0, MapWidth, MapHeight);
 
-	DeleteObject(hBrush);
-	DeleteObject(hPen);
-
 	// draw selection
-	hPen = CreatePen(PS_SOLID, 0, RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
-	hBrush = CreateSolidBrush(RGB(SelCol.Red, SelCol.Green, SelCol.Blue));
-
+	SetDCPenColor(hdc, SelCol);
+	SetDCBrushColor(hdc, SelCol);
 	if (sel > -1)
 	{
-		SelectObject(hdc, hPen);
-		SelectObject(hdc, hBrush);
 		RowDex = (sel / (MapWidth / CellWidth));
 		ColDex = (sel - ((MapWidth / CellWidth) * RowDex));
 		ColDex *= CellWidth;
@@ -557,11 +419,8 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 		Rectangle(hdc, ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
 	}
 
-	DeleteObject(hBrush);
-	DeleteObject(hPen);
-
 	// draw characters
-	hFont = CreateFontIndirect(&lf);
+	hFont = CreateFontIndirect(&lf_);
 	SelectObject(hdc, hFont);
 
 	CalcWidths(hdc);
@@ -573,17 +432,14 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	}
 	else
 	{
-		SetTextColor(hdc, RGB(TextCol.Red, TextCol.Green, TextCol.Blue));
-		SetBkColor(hdc, RGB(BkCol.Red, BkCol.Green, BkCol.Blue));
+		SetTextColor(hdc, color_);
+		SetBkColor(hdc, BkCol);
 	}
 
 	SetBkMode(hdc, TRANSPARENT);
 
-	hPen = CreatePen(PS_SOLID, 0, RGB(WidthCol.Red, WidthCol.Green, WidthCol.Blue));
-	SelectObject(hdc, hPen);
-
+	SetDCPenColor(hdc, WidthCol);
 	Letter = BaseChar;
-
 	for (RowDex = 0; RowDex < (MapHeight - CellHeight) + 1; RowDex += CellHeight)
 	{
 		for (ColDex = 0; ColDex < (MapWidth - CellWidth) + 1 && Letter < 256; ColDex += CellWidth)
@@ -615,15 +471,10 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 		}
 	}
 
-	DeleteObject(hPen);
-
-	// Draw grid lines
-	hPen = CreatePen(PS_SOLID, 0, RGB(GridCol.Red, GridCol.Green, GridCol.Blue));
-
+	// draw grid lines
+	SetDCPenColor(hdc, GridCol);
 	if (flags & DFM_GRIDLINES)
 	{
-		SelectObject(hdc, hPen);
-
 		for (RowDex = CellHeight - 1; RowDex < MapHeight; RowDex += CellHeight)
 		{
 			MoveToEx(hdc, 0, RowDex, NULL);
@@ -636,8 +487,6 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 			LineTo(hdc, ColDex, MapHeight);
 		}
 	}
-
-	DeleteObject(hPen);
 
 	// insert alpha channel
 	HBITMAP hAlphaBitmap = DrawAlphaBitmap(hdc, hFont);
@@ -657,7 +506,9 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 		b++;
 	}
 
+	DeleteObject(hAlphaBitmap);
 	DeleteObject(hFont);
+
 	DeleteDC(hdc);
 
 	return hBitmap;
@@ -665,15 +516,16 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 
 HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 {
-	HBITMAP hBitmap;
+	HBITMAP hBitmap, hOldBitmap;
 	BITMAPINFO bmi;
-	HPEN hPen;
-	HBRUSH hBrush;
 	int RowDex, ColDex, Letter;
 	HRGN ClipRgn;
 	RECT CharArea;
 	char Symbol[2];
 	unsigned char *img;
+
+	//SelectObject(hdc, GetStockObject(DC_PEN));
+	//SelectObject(hdc, GetStockObject(DC_BRUSH));
 
 	ZeroMemory(&bmi, sizeof(bmi));
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -684,21 +536,15 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 	bmi.bmiHeader.biCompression = BI_RGB;
 	bmi.bmiHeader.biSizeImage = MapWidth * MapHeight;
 	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void **)&img, NULL, 0);
-	SelectObject(hdc, hBitmap);
+	hOldBitmap = (HBITMAP)SelectObject(hdc, hBitmap);
 
 	// draw background
-	hPen = CreatePen(PS_SOLID, 0, RGB(0, 0, 0));
-	hBrush = CreateSolidBrush(RGB(0, 0, 0));
-	SelectObject(hdc, hPen);
-	SelectObject(hdc, hBrush);
-
+	SetDCPenColor(hdc, RGB(0, 0, 0));
+	SetDCBrushColor(hdc, RGB(0, 0, 0));
 	Rectangle(hdc, 0, 0, MapWidth, MapHeight);
 
-	DeleteObject(hBrush);
-	DeleteObject(hPen);
-
 	// draw characters
-	SelectObject(hdc, hFnt);
+	//SelectObject(hdc, hFnt);
 
 	CalcWidths(hdc);
 
@@ -729,12 +575,9 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 		}
 	}
 
-	return hBitmap;
-}
+	SelectObject(hdc, hOldBitmap);
 
-LPLOGFONT Font::GetLogicalFont()
-{
-	return &lf;
+	return hBitmap;
 }
 
 int Font::LoadConfig(const char *fname)
@@ -782,14 +625,13 @@ int Font::LoadConfig(const char *fname)
 	memcpy(&CellWidth, &dat[14], 4);
 	memcpy(&CellHeight, &dat[18], 4);
 	memcpy(&tVal, &dat[22], 4);
-	lf.lfHeight = tVal;
+	lf_.lfHeight = tVal;
 	memcpy(&tVal, &dat[26], 4);
-	lf.lfWidth = tVal;
+	lf_.lfWidth = tVal;
 	memcpy(&Flags, &dat[30], 4);
 	memcpy(&GridCol, &dat[34], sizeof(GridCol));
 	memcpy(&WidthCol, &dat[46], sizeof(WidthCol));
 	memcpy(&SelCol, &dat[58], sizeof(SelCol));
-	memcpy(&TextCol, &dat[70], sizeof(TextCol));
 	memcpy(&BkCol, &dat[82], sizeof(BkCol));
 
 	delete [] dat;
@@ -814,9 +656,9 @@ bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 	cfgfile.write((const char *)&MapHeight, sizeof(int));
 	cfgfile.write((const char *)&CellWidth, sizeof(int));
 	cfgfile.write((const char *)&CellHeight, sizeof(int));
-	tVal = (int)lf.lfHeight;
+	tVal = (int)lf_.lfHeight;
 	cfgfile.write((const char *)&tVal, sizeof(int));
-	tVal = (int)lf.lfWidth;
+	tVal = (int)lf_.lfWidth;
 	cfgfile.write((const char *)&tVal, sizeof(int));
 	if (Grid)
 	{
@@ -830,7 +672,6 @@ bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 	cfgfile.write((const char *)&GridCol, sizeof(GridCol));
 	cfgfile.write((const char *)&WidthCol, sizeof(WidthCol));
 	cfgfile.write((const char *)&SelCol, sizeof(SelCol));
-	cfgfile.write((const char *)&TextCol, sizeof(TextCol));
 	cfgfile.write((const char *)&BkCol, sizeof(BkCol));
 
 	cfgfile.close();
@@ -1014,11 +855,11 @@ bool Font::ImportData(char *fname)
 	Index = 0;
 	while (data[datptr] != '\n')
 	{
-		cfg->lf.lfFaceName[Index] = data[datptr];
+		cfg->lf_.lfFaceName[Index] = data[datptr];
 		++Index;
 		++datptr;
 	}
-	cfg->lf.lfFaceName[Index] = NULL;
+	cfg->lf_.lfFaceName[Index] = NULL;
 
 	// Font Height
 	while (data[datptr] != ',')
@@ -1027,7 +868,7 @@ bool Font::ImportData(char *fname)
 	}
 
 	datptr++;
-	sscanf(&data[datptr], "%d", &(cfg->lf.lfHeight));
+	sscanf(&data[datptr], "%d", &(cfg->lf_.lfHeight));
 
 	// Font Width
 	while (data[datptr] != ',')
@@ -1036,7 +877,7 @@ bool Font::ImportData(char *fname)
 	}
 
 	datptr++;
-	sscanf(&data[datptr], "%d", &(cfg->lf.lfWidth));
+	sscanf(&data[datptr], "%d", &(cfg->lf_.lfWidth));
 
 	// Char Widths
 	for (Index = 0; Index != 256; ++Index)
@@ -1115,7 +956,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->lf.lfWeight = Val;
+	cfg->lf_.lfWeight = Val;
 
 	// Italic Value
 	while (data[datptr] != ',')
@@ -1125,7 +966,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->lf.lfItalic = Val;
+	cfg->lf_.lfItalic = Val;
 
 	// AntiAlias Value
 	while (data[datptr] != ',')
@@ -1135,7 +976,7 @@ bool Font::ImportData(char *fname)
 
 	datptr++;
 	sscanf(&data[datptr], "%d", &Val);
-	cfg->lf.lfQuality = Val;
+	cfg->lf_.lfQuality = Val;
 
 	delete[] data;
 #endif
@@ -1159,9 +1000,9 @@ bool Font::ExportCSVData(char *fname)
 	out << "Cell Width," << CellWidth << "\n";
 	out << "Cell Height," << CellHeight << "\n";
 	out << "Start Char," << (int)BaseChar << "\n";
-	out << "Font Name," << lf.lfFaceName << "\n";
-	out << "Font Height," << lf.lfHeight << "\n";
-	out << "Font Width (0 is default)," << lf.lfWidth << "\n";
+	out << "Font Name," << lf_.lfFaceName << "\n";
+	out << "Font Height," << lf_.lfHeight << "\n";
+	out << "Font Width (0 is default)," << lf_.lfWidth << "\n";
 
 	for (Loop = 0; Loop != 256; ++Loop)
 	{
@@ -1186,9 +1027,9 @@ bool Font::ExportCSVData(char *fname)
 	out << "Global Width Offset," << (int)gWidthMod << "\n";
 	out << "Global X Offset," << (int)gHMod << "\n";
 	out << "Global Y Offset," << (int)gVMod << "\n";
-	out << "Bold," << lf.lfWeight << "\n";
-	out << "Italic," << (int)lf.lfItalic << "\n";
-	out << "AntiAlias," << (int)lf.lfQuality << "\n";
+	out << "Bold," << lf_.lfWeight << "\n";
+	out << "Italic," << (int)lf_.lfItalic << "\n";
+	out << "AntiAlias," << (int)lf_.lfQuality << "\n";
 
 	out.close();
 

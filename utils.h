@@ -20,7 +20,6 @@ typedef struct
 	char ghAdj, gvAdj, gwAdj;
 } Config;
 
-BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue);
 char Limit(int Val);
 int LimitSelection(int Sel, int MaxChar);
 void CreateFontMap();

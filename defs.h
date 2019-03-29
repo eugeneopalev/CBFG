@@ -31,7 +31,6 @@
 #define GRIDCOL  0
 #define WIDTHCOL 1
 #define SELCOL   2
-#define TEXTCOL  3
 #define BACKCOL  4
 
 // FontSave Constants
@@ -45,11 +44,6 @@
 
 typedef struct
 {
-	int Red, Green, Blue;
-} BFG_RGB;
-
-typedef struct
-{
 	int hScr, vScr;
 	bool Grid, wMarker, ModAll, vScroll, hScroll;
 	float Zoom;
@@ -60,7 +54,7 @@ typedef struct
 {
 	char ID[7];
 	int ImgWidth, ImgHeight, CellWidth, CellHeight, FontHeight, FontWidth;
-	BFG_RGB BackCol, ForeCol, GridCol, WidthCol, SelCol;
+	COLORREF BackCol, ForeCol, GridCol, WidthCol, SelCol;
 	int Flags;
 } AppConfig;
 

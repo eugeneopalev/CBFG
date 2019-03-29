@@ -12,8 +12,51 @@
 class Font
 {
 public:
-	Font();
-	~Font();
+	Font():
+		color_(RGB(255, 255, 255)),
+		BkCol(RGB(0, 0, 0)),
+		GridCol(RGB(170, 0, 170)),
+		WidthCol(RGB(170, 170, 0)),
+		SelCol(RGB(0, 154, 0))
+	{
+		ZeroMemory(&lf_, sizeof(lf_));
+
+		BaseChar = 32;
+
+		MapWidth = 256;
+		MapHeight = 256;
+		CellHeight = 32;
+		CellWidth = 32;
+		gHMod = 0;
+		gVMod = 0;
+		gWidthMod = 0;
+
+		for (int loop = 0; loop != 256; loop++)
+		{
+			HMod[loop] = 0;
+			VMod[loop] = 0;
+			WidthMod[loop] = 0;
+		}
+
+		/*lf_.lfHeight = 20;
+		lf_.lfWidth = 0;
+		lf_.lfEscapement = 0;
+		lf_.lfOrientation = 0;
+		lf_.lfWeight = FW_NORMAL;
+		lf_.lfItalic = FALSE;
+		lf_.lfUnderline = FALSE;
+		lf_.lfStrikeOut = FALSE;
+		lf_.lfCharSet = DEFAULT_CHARSET;
+		lf_.lfOutPrecision = OUT_DEFAULT_PRECIS;
+		lf_.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+		lf_.lfQuality = NONANTIALIASED_QUALITY;
+		lf_.lfPitchAndFamily = DEFAULT_PITCH;
+		lf_.lfFaceName[0] = NULL;*/
+	}
+	~Font()
+	{
+	}
+
 	int  GetSize(int Which);
 	int  SetSize(int Which, int NewSize);
 	unsigned char GetBaseChar();
@@ -26,18 +69,12 @@ public:
 	long SetFontHeight(long);
 	long GetFontWidth();
 	long SetFontWidth(long);
-	long GetFontWeight();
-	long SetFontWeight(long);
 	long GetFontQuality();
 	long SetFontQuality(long);
-	long GetFontItalic();
-	long SetFontItalic(long);
 	char *GetFontName();
 	bool SetFontName(char *);
 	bool CalcWidths(HDC);
 	HBITMAP DrawBitmap(HDC hdc, int flags, int sel);
-
-	LPLOGFONT GetLogicalFont();
 
 	int  LoadConfig(const char *fname);
 	bool SaveConfig(const char *fname, bool Grid, bool Width_);
@@ -47,14 +84,29 @@ public:
 	int  ExportMap(char *fname, int fmt);
 	bool ImportData(char *fname);
 
-	void SetCol(int Which, BYTE Red, BYTE Green, BYTE Blue);
-	void SetCol(int Which, BFG_RGB Col);
-	BFG_RGB GetCol(int Which);
+	void SetCol(int Which, COLORREF Col);
+	COLORREF GetCol(int Which);
+
+	LPLOGFONT GetLogicalFont()
+	{
+		return &lf_;
+	}
+
+	COLORREF GetColor() const
+	{
+		return color_;
+	}
+	void SetColor(COLORREF color)
+	{
+		color_ = color;
+	}
 
 private:
 	HBITMAP DrawAlphaBitmap(HDC hdc, HFONT hFnt);
 
-	LOGFONT lf;
+	LOGFONT lf_;
+	COLORREF color_;
+
 	int  MapWidth, MapHeight;
 	int  CellHeight, CellWidth;
 	unsigned char BaseChar;
@@ -63,7 +115,7 @@ private:
 	int VMod[256];
 	int HMod[256];
 	int gWidthMod, gHMod, gVMod;
-	BFG_RGB BkCol, TextCol, GridCol, WidthCol, SelCol;
+	COLORREF BkCol, GridCol, WidthCol, SelCol;
 
 	bool IsPower(int TestVal);
 	bool ExportCSVData(char *fname);

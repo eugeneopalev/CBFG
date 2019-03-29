@@ -4,17 +4,6 @@
 #include "bfg.h"
 #include "resource.h"
 
-BFG_RGB MakeRGB(unsigned char Red, unsigned char Green, unsigned char Blue)
-{
-	BFG_RGB Pack;
-
-	Pack.Red = Red;
-	Pack.Green = Green;
-	Pack.Blue = Blue;
-
-	return Pack;
-}
-
 char Limit(int Val)
 {
 	if (Val < -128)

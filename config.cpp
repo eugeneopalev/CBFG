@@ -5,18 +5,18 @@
 #include "utils.h"
 #include "resource.h"
 
-void SetConfigRGB(HWND Win, BFG_RGB Cols)
+void SetConfigRGB(HWND Win, COLORREF Cols)
 {
 	char Text[256];
-	wsprintf(Text, "%d", Cols.Red);
+	wsprintf(Text, "%d", GetRValue(Cols));
 	SendDlgItemMessage(Win, TXT_RED, WM_SETTEXT, 0, (LPARAM)Text);
-	SendDlgItemMessage(Win, SLD_RED, TBM_SETPOS, TRUE, (LPARAM)Cols.Red);
-	wsprintf(Text, "%d", Cols.Green);
+	SendDlgItemMessage(Win, SLD_RED, TBM_SETPOS, TRUE, (LPARAM)GetRValue(Cols));
+	wsprintf(Text, "%d", GetGValue(Cols));
 	SendDlgItemMessage(Win, TXT_GREEN, WM_SETTEXT, 0, (LPARAM)Text);
-	SendDlgItemMessage(Win, SLD_GREEN, TBM_SETPOS, TRUE, (LPARAM)Cols.Green);
-	wsprintf(Text, "%d", Cols.Blue);
+	SendDlgItemMessage(Win, SLD_GREEN, TBM_SETPOS, TRUE, (LPARAM)GetGValue(Cols));
+	wsprintf(Text, "%d", GetBValue(Cols));
 	SendDlgItemMessage(Win, TXT_BLUE, WM_SETTEXT, 0, (LPARAM)Text);
-	SendDlgItemMessage(Win, SLD_BLUE, TBM_SETPOS, TRUE, (LPARAM)Cols.Blue);
+	SendDlgItemMessage(Win, SLD_BLUE, TBM_SETPOS, TRUE, (LPARAM)GetBValue(Cols));
 	InvalidateRect(GetDlgItem(Win, ODR_COLOR), NULL, FALSE);
 }
 
@@ -49,7 +49,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lCfg.Flags |= SHOW_WIDTH;
 		}
 		lCfg.BackCol = Fnt.GetCol(BACKCOL);
-		lCfg.ForeCol = Fnt.GetCol(TEXTCOL);
+		lCfg.ForeCol = Fnt.GetColor();
 		lCfg.GridCol = Fnt.GetCol(GRIDCOL);
 		lCfg.WidthCol = Fnt.GetCol(WIDTHCOL);
 		lCfg.SelCol = Fnt.GetCol(SELCOL);
@@ -217,24 +217,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (Sel)
 			{
 			case GRIDCOL:
-				lCfg.GridCol.Red = Red;
+				//lCfg.GridCol.Red = Red;
 				break;
 
 			case WIDTHCOL:
-				lCfg.WidthCol.Red = Red;
+				//lCfg.WidthCol.Red = Red;
 				break;
 
 			case SELCOL:
-				lCfg.SelCol.Red = Red;
+				//lCfg.SelCol.Red = Red;
 				break;
 
 			case BACKCOL:
-				lCfg.BackCol.Red = Red;
+				//lCfg.BackCol.Red = Red;
 				break;
 
-			case TEXTCOL:
-				lCfg.ForeCol.Red = Red;
-				break;
+				/*case TEXTCOL:
+				    lCfg.ForeCol.Red = Red;
+				    break;*/
 			}
 		}
 
@@ -247,24 +247,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (Sel)
 			{
 			case GRIDCOL:
-				lCfg.GridCol.Green = Green;
+				//lCfg.GridCol.Green = Green;
 				break;
 
 			case WIDTHCOL:
-				lCfg.WidthCol.Green = Green;
+				//lCfg.WidthCol.Green = Green;
 				break;
 
 			case SELCOL:
-				lCfg.SelCol.Green = Green;
+				//lCfg.SelCol.Green = Green;
 				break;
 
 			case BACKCOL:
-				lCfg.BackCol.Green = Green;
+				//lCfg.BackCol.Green = Green;
 				break;
 
-			case TEXTCOL:
-				lCfg.ForeCol.Green = Green;
-				break;
+				/*case TEXTCOL:
+				    lCfg.ForeCol.Green = Green;
+				    break;*/
 			}
 		}
 
@@ -277,24 +277,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (Sel)
 			{
 			case GRIDCOL:
-				lCfg.GridCol.Blue = Blue;
+				//lCfg.GridCol.Blue = Blue;
 				break;
 
 			case WIDTHCOL:
-				lCfg.WidthCol.Blue = Blue;
+				//lCfg.WidthCol.Blue = Blue;
 				break;
 
 			case SELCOL:
-				lCfg.SelCol.Blue = Blue;
+				//lCfg.SelCol.Blue = Blue;
 				break;
 
 			case BACKCOL:
-				lCfg.BackCol.Blue = Blue;
+				//lCfg.BackCol.Blue = Blue;
 				break;
 
-			case TEXTCOL:
-				lCfg.ForeCol.Blue = Blue;
-				break;
+				/*case TEXTCOL:
+				    lCfg.ForeCol.Blue = Blue;
+				    break;*/
 			}
 		}
 
@@ -327,24 +327,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				switch (Sel)
 				{
 				case GRIDCOL:
-					lCfg.GridCol.Red = Val;
+					//lCfg.GridCol.Red = Val;
 					break;
 
 				case WIDTHCOL:
-					lCfg.WidthCol.Red = Val;
+					//lCfg.WidthCol.Red = Val;
 					break;
 
 				case SELCOL:
-					lCfg.SelCol.Red = Val;
+					//lCfg.SelCol.Red = Val;
 					break;
 
 				case BACKCOL:
-					lCfg.BackCol.Red = Val;
+					//lCfg.BackCol.Red = Val;
 					break;
 
-				case TEXTCOL:
-					lCfg.ForeCol.Red = Val;
-					break;
+					/*case TEXTCOL:
+					    lCfg.ForeCol.Red = Val;
+					    break;*/
 				}
 
 				SendDlgItemMessage(hDlg, SLD_RED, TBM_SETPOS, TRUE, (LPARAM)Val);
@@ -372,24 +372,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				switch (Sel)
 				{
 				case GRIDCOL:
-					lCfg.GridCol.Green = Val;
+					//lCfg.GridCol.Green = Val;
 					break;
 
 				case WIDTHCOL:
-					lCfg.WidthCol.Green = Val;
+					//lCfg.WidthCol.Green = Val;
 					break;
 
 				case SELCOL:
-					lCfg.SelCol.Green = Val;
+					//lCfg.SelCol.Green = Val;
 					break;
 
 				case BACKCOL:
-					lCfg.BackCol.Green = Val;
+					//lCfg.BackCol.Green = Val;
 					break;
 
-				case TEXTCOL:
-					lCfg.ForeCol.Green = Val;
-					break;
+					/*case TEXTCOL:
+					    lCfg.ForeCol.Green = Val;
+					    break;*/
 				}
 
 				SendDlgItemMessage(hDlg, SLD_GREEN, TBM_SETPOS, TRUE, (LPARAM)Val);
@@ -417,24 +417,24 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				switch (Sel)
 				{
 				case GRIDCOL:
-					lCfg.GridCol.Blue = Val;
+					//lCfg.GridCol.Blue = Val;
 					break;
 
 				case WIDTHCOL:
-					lCfg.WidthCol.Blue = Val;
+					//lCfg.WidthCol.Blue = Val;
 					break;
 
 				case SELCOL:
-					lCfg.SelCol.Blue = Val;
+					//lCfg.SelCol.Blue = Val;
 					break;
 
 				case BACKCOL:
-					lCfg.BackCol.Blue = Val;
+					//lCfg.BackCol.Blue = Val;
 					break;
 
-				case TEXTCOL:
-					lCfg.ForeCol.Blue = Val;
-					break;
+					/*case TEXTCOL:
+					    lCfg.ForeCol.Blue = Val;
+					    break;*/
 				}
 				SendDlgItemMessage(hDlg, SLD_BLUE, TBM_SETPOS, TRUE, (LPARAM)Val);
 				InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
@@ -550,9 +550,9 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					SetConfigRGB(hDlg, lCfg.BackCol);
 					break;
 
-				case TEXTCOL:
-					SetConfigRGB(hDlg, lCfg.ForeCol);
-					break;
+					/*case TEXTCOL:
+					    SetConfigRGB(hDlg, lCfg.ForeCol);
+					    break;*/
 				}
 
 				InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
@@ -700,7 +700,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			info.Grid = lCfg.Flags & SHOW_GRID;
 			info.wMarker = lCfg.Flags & SHOW_WIDTH;
 			Fnt.SetCol(BACKCOL, lCfg.BackCol);
-			Fnt.SetCol(TEXTCOL, lCfg.ForeCol);
+			Fnt.SetColor(lCfg.ForeCol);
 			Fnt.SetCol(GRIDCOL, lCfg.GridCol);
 			Fnt.SetCol(WIDTHCOL, lCfg.WidthCol);
 			Fnt.SetCol(SELCOL, lCfg.SelCol);
@@ -719,7 +719,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			info.Grid = lCfg.Flags & SHOW_GRID;
 			info.wMarker = lCfg.Flags & SHOW_WIDTH;
 			Fnt.SetCol(BACKCOL, lCfg.BackCol);
-			Fnt.SetCol(TEXTCOL, lCfg.ForeCol);
+			Fnt.SetColor(lCfg.ForeCol);
 			Fnt.SetCol(GRIDCOL, lCfg.GridCol);
 			Fnt.SetCol(WIDTHCOL, lCfg.WidthCol);
 			Fnt.SetCol(SELCOL, lCfg.SelCol);
@@ -755,11 +755,11 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			lCfg.FontWidth = 0;
 			SendDlgItemMessage(hDlg, TXT_CFG_FONTWIDTH, WM_SETTEXT, 256, (LPARAM)"0");
 
-			lCfg.BackCol = MakeRGB(0, 0, 0);
-			lCfg.ForeCol = MakeRGB(255, 255, 255);
-			lCfg.GridCol = MakeRGB(170, 0, 170);
-			lCfg.WidthCol = MakeRGB(170, 170, 0);
-			lCfg.SelCol = MakeRGB(0, 154, 0);
+			lCfg.BackCol = RGB(0, 0, 0);
+			lCfg.ForeCol = RGB(255, 255, 255);
+			lCfg.GridCol = RGB(170, 0, 170);
+			lCfg.WidthCol = RGB(170, 170, 0);
+			lCfg.SelCol = RGB(0, 154, 0);
 
 			SendDlgItemMessage(hDlg, CBO_CFG_ITEM, CB_SETCURSEL, 0, 0);
 

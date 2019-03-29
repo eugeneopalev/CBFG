@@ -4,6 +4,8 @@
 #include "defs.h"
 #include "resource.h"
 
+//#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+
 HINSTANCE g_hInstance;
 HWND g_hMain;
 Font Fnt;
@@ -56,16 +58,6 @@ BOOL GetTargetName(char *fname, const char *Title, const char *filter, const cha
 	return GetSaveFileName(&fileopeninfo);
 }
 
-int CALLBACK EnumFontMgr(ENUMLOGFONTEX *lpelfe, NEWTEXTMETRICEX *lpntme, int FontType, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lpntme);
-	UNREFERENCED_PARAMETER(FontType);
-	UNREFERENCED_PARAMETER(lParam);
-
-	SendDlgItemMessage(g_hMain, CBO_FONTS, CB_ADDSTRING, 0, (LPARAM)lpelfe->elfFullName);
-	return 1;
-}
-
 BOOL CALLBACK TextWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	int Row, Col, Sel;
@@ -112,38 +104,117 @@ BOOL CALLBACK TextWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	return CallWindowProc((WNDPROC)OldProc, hDlg, msg, wParam, lParam);
 }
 
-// this function brought from here:
-// https://docs.microsoft.com/en-us/windows/desktop/gdi/creating-a-logical-font
-HFONT MyCreateFont()
+UINT_PTR CALLBACK Lpcfhookproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	CHOOSEFONT cf;
+	static LPCHOOSEFONT cf;
+	LOGFONT lf;
+	HWND hCtrl;
+	LONG hMy, cboHght;
+	RECT rcCtrl;
+	int pic;
+	LPDRAWITEMSTRUCT lpdis;
+	CHOOSECOLOR SelCol;
+	static COLORREF CustCol[16]; // array of custom colors for color picker
 
-	ZeroMemory(&cf, sizeof(cf));
-	cf.lStructSize = sizeof(cf);
-	cf.hwndOwner = g_hMain;
-	//cf.hDC = (HDC)NULL;
-	cf.lpLogFont = Fnt.GetLogicalFont();
-	//cf.iPointSize = 0;
-	cf.Flags = CF_SCREENFONTS;
-	//cf.rgbColors = RGB(0, 0, 0);
-	//cf.lCustData = 0L;
-	//cf.lpfnHook = (LPCFHOOKPROC)NULL;
-	//cf.lpTemplateName = (LPSTR)NULL;
-	cf.hInstance = g_hInstance;
-	//cf.lpszStyle = (LPSTR)NULL;
-	cf.nFontType = SCREEN_FONTTYPE;
-	//cf.nSizeMin = 0;
-	//cf.nSizeMax = 0;
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+		//SendDlgItemMessage(hDlg, WM_CHOOSEFONT_GETLOGFONT, CB_ADDSTRING, 0, (LPARAM)"None");
+		//SendMessage(hDlg, WM_CHOOSEFONT_GETLOGFONT, 0, (LPARAM)&lf);
+		cf = (LPCHOOSEFONT)lParam;
 
-	ChooseFont(&cf);
+		// replace default color picker with our own one
+		hCtrl = GetDlgItem(hDlg, cmb4);
+		hDlg = GetParent(hCtrl);
 
-	return CreateFontIndirect(cf.lpLogFont);
+		GetWindowRect(hCtrl, &rcCtrl);
+		MapWindowPoints(NULL, hDlg, (LPPOINT)&rcCtrl, 2);
+		rcCtrl.right -= rcCtrl.left;
+		rcCtrl.bottom -= rcCtrl.top;
+
+		ShowWindow(hCtrl, SW_HIDE);
+
+		// create static image
+		hCtrl = CreateWindow("STATIC", NULL, WS_VISIBLE | WS_CHILD | SS_OWNERDRAW, rcCtrl.left, rcCtrl.top, rcCtrl.bottom, rcCtrl.bottom, hDlg, (HMENU)10100, g_hInstance, NULL);
+
+		// create button
+		hCtrl = CreateWindow("BUTTON", "Change...", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, rcCtrl.left + rcCtrl.bottom + 8, rcCtrl.top, rcCtrl.right - (rcCtrl.bottom + 8), rcCtrl.bottom, hDlg, (HMENU)10101, g_hInstance, NULL);
+
+		/*SetParent(hMy, hDlg);*/
+		/*
+		rc.right -= 20;*/
+		//MapWindowPoints(hCtrl, hDlg, rc, 2);
+		//cboHght = rc.bottom - rc.top;
+		//MoveWindow(hCtrl, rc.left, rc.top, rc.right, rc.bottom, TRUE);
+		//SetWindowPos(hCtrl, NULL, 0, 0, rc.right, rc.bottom, SWP_NOMOVE | SWP_NOZORDER);
+		//ShowWindow(hCbo, SW_HIDE);
+		//hGrp = GetDlgItem(hDlg, grp1);
+		//ShowWindow(hGrp, SW_HIDE);
+		/*GetClientRect(hGrp, rc: MapWindowPoints hGrp, hDlg, rc, 2);
+		SetWindowPos(hGrp, 0, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top + pic.ScaleHeight - cboHght, SWP_NOZORDER);*/
+		//ShowWindow(hCbo, SW_HIDE);
+		//hCbo = GetDlgItem(hDlg, stc6);
+
+		//ShowWindow(hCbo, SW_HIDE);
+		//GetWindowRect(hDlg, &rc);
+		//SetWindowPos(hDlg, NULL, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top + pic.ScaleHeight - cboHght, SWP_NOZORDER);
+		return TRUE;
+
+	case WM_DESTROY:
+		hCtrl = GetDlgItem(hDlg, cmb4);
+		//hDlg = GetParent(hCtrl);
+		GetClientRect(hCtrl, &rcCtrl);
+		return FALSE;
+
+	case WM_CTLCOLORDLG:
+		return TRUE;
+
+	case WM_DRAWITEM:
+		if (wParam == 10100)
+		{
+			lpdis = (LPDRAWITEMSTRUCT)lParam;
+			SelectObject(lpdis->hDC, GetStockObject(DC_PEN));
+			SelectObject(lpdis->hDC, GetStockObject(DC_BRUSH));
+
+			SetDCPenColor(lpdis->hDC, RGB(0, 0, 0));
+			SetDCBrushColor(lpdis->hDC, cf->rgbColors);
+			Rectangle(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom);
+
+			return TRUE;
+		}
+		break;
+
+	case WM_COMMAND:
+		int i = LOWORD(wParam);
+		switch (i)
+		{
+		case 10101:
+			ZeroMemory(&SelCol, sizeof(SelCol));
+			SelCol.lStructSize = sizeof(CHOOSECOLOR);
+			SelCol.hwndOwner = hDlg;
+			SelCol.rgbResult = cf->rgbColors;
+			SelCol.lpCustColors = (LPDWORD)CustCol;
+			SelCol.Flags = CC_RGBINIT | CC_FULLOPEN | CC_ANYCOLOR;
+			if (ChooseColor(&SelCol))
+			{
+				cf->rgbColors = SelCol.rgbResult;
+			}
+
+			InvalidateRgn(hDlg, NULL, NULL);
+			return TRUE;
+
+		default:
+			break;
+		}
+		break;
+	}
+
+	return FALSE;
 }
 
 BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HDC dc;
-	LOGFONT fDef;
 	char Text[256];
 	int RowDex;
 	int tVal, Flags;
@@ -151,9 +222,10 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	std::string VerData, VerNum;
 	RECT rcArea;
 	HBRUSH hBr;
-	BFG_RGB ColVal;
+	COLORREF ColVal;
 	CHOOSECOLOR SelCol;
 	static COLORREF CustCol[16]; // array of custom colors for color picker
+	CHOOSEFONT cf;
 
 	switch (msg)
 	{
@@ -178,6 +250,10 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_ADDSTRING, 0, (LPARAM)"1024");
 		SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_ADDSTRING, 0, (LPARAM)"2048");
 		SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_ADDSTRING, 0, (LPARAM)"4096");
+
+		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 255));
+		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETPOS, (WPARAM)FALSE, 0);
+		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETTICFREQ, (WPARAM)127, 0);
 
 		tVal = Fnt.GetSize(MAPWIDTH);
 		if (tVal == 32)
@@ -294,9 +370,8 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == ODR_FORECOL)
 		{
 			dc = ((LPDRAWITEMSTRUCT)lParam)->hDC;
-			ColVal = Fnt.GetCol(TEXTCOL);
 			GetClientRect(hDlg, &rcArea);
-			hBr = CreateSolidBrush(RGB(ColVal.Red, ColVal.Green, ColVal.Blue));
+			hBr = CreateSolidBrush(Fnt.GetColor());
 			FillRect(dc, &rcArea, hBr);
 			DeleteObject(hBr);
 		}
@@ -304,9 +379,8 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam == ODR_BACKCOL)
 		{
 			dc = ((LPDRAWITEMSTRUCT)lParam)->hDC;
-			ColVal = Fnt.GetCol(BACKCOL);
 			GetClientRect(hDlg, &rcArea);
-			hBr = CreateSolidBrush(RGB(ColVal.Red, ColVal.Green, ColVal.Blue));
+			hBr = CreateSolidBrush(Fnt.GetCol(BACKCOL));
 			FillRect(dc, &rcArea, hBr);
 			DeleteObject(hBr);
 		}
@@ -315,20 +389,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		return TRUE;
 
 	case WM_APP:
-		SendDlgItemMessage(hDlg, CBO_FONTS, CB_RESETCONTENT, 0, 0);
-		fDef.lfCharSet = ANSI_CHARSET;
-		fDef.lfFaceName[0] = NULL;
-		fDef.lfPitchAndFamily = 0;
-
-		dc = GetDC(g_hMain);
-
-		EnumFontFamiliesEx(dc, &fDef, (FONTENUMPROC)EnumFontMgr, 0, 0);
-		ReleaseDC(g_hMain, dc);
-
-		SendDlgItemMessage(hDlg, CBO_FONTS, CB_SETCURSEL, 0, 0);
-		SendDlgItemMessage(hDlg, CBO_FONTS, CB_GETLBTEXT, 0, (LPARAM)Text);
-		Fnt.SetFontName(Text);
-
 		if (info.Grid)
 		{
 			SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_CHECKED, 0);
@@ -400,13 +460,20 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_HSCROLL:
 	{
+		LRESULT pos = SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_GETPOS, 0, 0);
+		WCHAR buf[4];
+		wsprintfW(buf, L"%ld", pos);
+		SetDlgItemTextW(hDlg, IDC_EDIT7, buf);
+
 		switch (LOWORD(wParam))
 		{
 		case SB_THUMBTRACK:
-			SetScrollPos((HWND)lParam, SB_CTL, HIWORD(wParam), TRUE);
-			info.hScr = HIWORD(wParam);
+		{
+			info.hScr = SendDlgItemMessage(hDlg, SCR_HOR, SBM_GETPOS, 0, 0);
+			SetScrollPos(GetDlgItem(hDlg, SCR_HOR), SB_CTL, info.hScr, TRUE);
 			CreateFontMap();
 			return 0;
+		}
 
 		case SB_LINELEFT:
 			if (info.hScroll == FALSE)
@@ -578,24 +645,49 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		return 0;
-		break;
 	}
 
 	case WM_COMMAND:
 	{
-		switch (LOWORD(wParam)) // Buttons & Menu items
+		switch (LOWORD(wParam))
 		{
+		case IDC_BUTTON1:
+			// https://docs.microsoft.com/en-us/windows/desktop/api/commdlg/ns-commdlg-choosefontw
+			ZeroMemory(&cf, sizeof(cf));
+			cf.lStructSize = sizeof(cf);
+			cf.hwndOwner = g_hMain;
+			//cf.hDC = (HDC)NULL;
+			cf.lpLogFont = Fnt.GetLogicalFont();
+			//cf.iPointSize = 0;
+			cf.Flags = CF_BOTH | CF_INITTOLOGFONTSTRUCT | CF_EFFECTS | CF_ENABLEHOOK;
+			cf.rgbColors = Fnt.GetColor();
+			//cf.lCustData = 0L;
+			cf.lpfnHook = (LPCFHOOKPROC)Lpcfhookproc;
+			//cf.lpTemplateName = (LPSTR)NULL;
+			cf.hInstance = g_hInstance;
+			//cf.lpszStyle = (LPSTR)NULL;
+			//cf.nFontType = SCREEN_FONTTYPE;
+			//cf.nSizeMin = 0;
+			//cf.nSizeMax = 0;
+
+			if (ChooseFont(&cf))
+			{
+				//Fnt.SetFontName(Text);
+				CreateFontMap();
+			}
+
+			return TRUE;
+
 		case ID_COLOUR_SETTEXTCOLOUR:
 		case ODR_FORECOL:
-			ColVal = Fnt.GetCol(TEXTCOL);
 			SelCol.lStructSize = sizeof(CHOOSECOLOR);
 			SelCol.hwndOwner = hDlg;
-			SelCol.rgbResult = RGB(ColVal.Red, ColVal.Green, ColVal.Blue);
+			SelCol.rgbResult = Fnt.GetColor();
 			SelCol.lpCustColors = (LPDWORD)CustCol;
 			SelCol.Flags = CC_FULLOPEN | CC_RGBINIT | CC_ANYCOLOR;
 			if (ChooseColor(&SelCol))
 			{
-				Fnt.SetCol(TEXTCOL, GetRValue(SelCol.rgbResult), GetGValue(SelCol.rgbResult), GetBValue(SelCol.rgbResult));
+				Fnt.SetColor(SelCol.rgbResult);
 			}
 
 			InvalidateRgn(hDlg, NULL, NULL);
@@ -603,15 +695,14 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case ID_COLOUR_SETBACKGROUNDCOLOUR:
 		case ODR_BACKCOL:
-			ColVal = Fnt.GetCol(BACKCOL);
 			SelCol.lStructSize = sizeof(CHOOSECOLOR);
 			SelCol.hwndOwner = hDlg;
-			SelCol.rgbResult = RGB(ColVal.Red, ColVal.Green, ColVal.Blue);
+			SelCol.rgbResult = Fnt.GetCol(BACKCOL);
 			SelCol.lpCustColors = (LPDWORD)CustCol;
 			SelCol.Flags = CC_FULLOPEN | CC_RGBINIT | CC_ANYCOLOR;
 			if (ChooseColor(&SelCol))
 			{
-				Fnt.SetCol(BACKCOL, GetRValue(SelCol.rgbResult), GetGValue(SelCol.rgbResult), GetBValue(SelCol.rgbResult));
+				Fnt.SetCol(BACKCOL, SelCol.rgbResult);
 			}
 
 			InvalidateRgn(hDlg, NULL, NULL);
@@ -645,30 +736,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				SendDlgItemMessage(g_hMain, CHK_WIDTH, BM_SETCHECK, BST_UNCHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case CHK_BOLD:
-			if (Fnt.GetFontWeight() == FW_NORMAL)
-			{
-				Fnt.SetFontWeight(FW_BOLD);
-			}
-			else
-			{
-				Fnt.SetFontWeight(FW_NORMAL);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case CHK_ITAL:
-			if (Fnt.GetFontItalic())
-			{
-				Fnt.SetFontItalic(FALSE);
-			}
-			else
-			{
-				Fnt.SetFontItalic(TRUE);
 			}
 			CreateFontMap();
 			return TRUE;
@@ -873,10 +940,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
 			}
 
-			SendDlgItemMessage(g_hMain, CBO_FONTS, CB_SETCURSEL, 0, 0);
-			SendDlgItemMessage(hDlg, CBO_FONTS, CB_GETLBTEXT, 0, (LPARAM)Text);
-			Fnt.SetFontName(Text);
-
 			Fnt.SetBaseChar(32);
 			wsprintf(Text, "%d", 32);
 			SendDlgItemMessage(g_hMain, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
@@ -886,12 +949,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			wsprintf(Text, "%d", Fnt.GetFontWidth());
 			SendDlgItemMessage(g_hMain, TXT_FONTWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-
-			Fnt.SetFontWeight(FW_NORMAL);
-			SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_UNCHECKED, 0);
-
-			Fnt.SetFontItalic(FALSE);
-			SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_UNCHECKED, 0);
 
 			Fnt.SetFontQuality(NONANTIALIASED_QUALITY);
 			SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 0, 0);
@@ -919,32 +976,32 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				if (Fnt.ImportData(Text))
 				{
 					// Set font face
-					wsprintf(Text, "%d", Fnt.GetFontName());
-					SendDlgItemMessage(g_hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
+					//wsprintf(Text, "%d", Fnt.GetFontName());
+					//SendDlgItemMessage(g_hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
 
 					// Set Start Char
 					wsprintf(Text, "%d", Fnt.GetBaseChar());
 					SendDlgItemMessage(g_hMain, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
 
 					// Set Bold Checkbox
-					if (Fnt.GetFontWeight() == FW_NORMAL)
+					/*if (Fnt.GetFontWeight() == FW_NORMAL)
 					{
-						SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_UNCHECKED, 0);
+					    SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_UNCHECKED, 0);
 					}
 					else
 					{
-						SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_CHECKED, 0);
+					    SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_CHECKED, 0);
 					}
 
 					// Set Italic Checkbox
 					if (Fnt.GetFontItalic())
 					{
-						SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_CHECKED, 0);
+					    SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_CHECKED, 0);
 					}
 					else
 					{
-						SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_UNCHECKED, 0);
-					}
+					    SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_UNCHECKED, 0);
+					}*/
 
 					CreateFontMap();
 				}
@@ -1245,13 +1302,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		case CBN_SELCHANGE:
 			switch (LOWORD(wParam))
 			{
-			case CBO_FONTS:
-				RowDex = SendDlgItemMessage(hDlg, CBO_FONTS, CB_GETCURSEL, 0, 0);
-				SendDlgItemMessage(hDlg, CBO_FONTS, CB_GETLBTEXT, RowDex, (LPARAM)Text);
-				Fnt.SetFontName(Text);
-				CreateFontMap();
-				return TRUE;
-
 			case CBO_ALIAS:
 				RowDex = SendDlgItemMessage(hDlg, CBO_ALIAS, CB_GETCURSEL, 0, 0);
 				if (RowDex == 0)
