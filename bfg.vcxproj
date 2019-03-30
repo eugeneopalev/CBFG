@@ -82,7 +82,6 @@
     <Image Include="bfg.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="about.cpp" />
     <ClCompile Include="bfg.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="font.cpp" />

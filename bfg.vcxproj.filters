@@ -33,9 +33,6 @@
     <ClCompile Include="font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="about.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="saveopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

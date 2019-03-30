@@ -1,8 +1,6 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#define APP_VERSION 1.41
-
 #define SHOW_GRID   0x1
 #define SHOW_WIDTH  0x2
 #define FONT_BOLD   0x4

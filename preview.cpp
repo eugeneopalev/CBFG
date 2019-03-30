@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "font.h"
+#include "defs.h"
 #include "bfg.h"
 #include "resource.h"
 

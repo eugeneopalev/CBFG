@@ -14,30 +14,9 @@ long OldProc;
 
 HBRUSH g_hBackground;
 
-BOOL CALLBACK AboutProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
-
-BOOL GetSourceName(char *fname, const char *title, const char *filter, const char *DefExt)
-{
-	OPENFILENAME fileopeninfo;
-	fname[0] = NULL;
-
-	memset(&fileopeninfo, 0, sizeof(fileopeninfo));
-	fileopeninfo.lStructSize = sizeof(OPENFILENAME);
-	fileopeninfo.hwndOwner = g_hMain;
-	fileopeninfo.hInstance = g_hInstance;
-	fileopeninfo.lpstrFilter = filter;
-	fileopeninfo.nFilterIndex = 1;
-	fileopeninfo.lpstrFile = fname;
-	fileopeninfo.nMaxFile = 255;
-	fileopeninfo.lpstrTitle = title;
-	fileopeninfo.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
-	fileopeninfo.lpstrDefExt = DefExt;
-
-	return GetOpenFileName(&fileopeninfo);
-}
 
 BOOL GetTargetName(char *fname, const char *Title, const char *filter, const char *DefExt)
 {
@@ -253,7 +232,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETRANGE, (WPARAM)TRUE, (LPARAM)MAKELONG(0, 255));
 		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETPOS, (WPARAM)FALSE, 0);
-		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETTICFREQ, (WPARAM)127, 0);
+		//SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETTICFREQ, (WPARAM)8, 0);
 
 		tVal = Fnt.GetSize(MAPWIDTH);
 		if (tVal == 32)
@@ -336,13 +315,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_ADDSTRING, 0, (LPARAM)"ClearType (WinXP Only)");
 		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 0, 0);
 
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_ADDSTRING, 0, (LPARAM)"25%");
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_ADDSTRING, 0, (LPARAM)"50%");
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_ADDSTRING, 0, (LPARAM)"100%");
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_ADDSTRING, 0, (LPARAM)"200%");
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_ADDSTRING, 0, (LPARAM)"400%");
-		SendDlgItemMessage(hDlg, CBO_ZOOM, CB_SETCURSEL, 2, 0);
-
 		wsprintf(Text, "%d", Fnt.GetSize(CELLWIDTH));
 		SendDlgItemMessage(hDlg, TXT_CELLWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
 		wsprintf(Text, "%d", Fnt.GetSize(CELLHEIGHT));
@@ -391,23 +363,19 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_APP:
 		if (info.Grid)
 		{
-			SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_CHECKED, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 		}
 		else
 		{
-			SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_UNCHECKED, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_UNCHECKED);
 		}
 
 		if (info.wMarker)
 		{
-			SendDlgItemMessage(hDlg, CHK_WIDTH, BM_SETCHECK, BST_CHECKED, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 		}
 		else
 		{
-			SendDlgItemMessage(hDlg, CHK_WIDTH, BM_SETCHECK, BST_UNCHECKED, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
 		}
 
@@ -709,32 +677,26 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case ID_VIEW_SHOWGRID:
-		case CHK_GRID:
 			info.Grid ^= 1;
 			if (info.Grid)
 			{
-				SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_CHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 			}
 			else
 			{
-				SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_UNCHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_UNCHECKED);
 			}
 			CreateFontMap();
 			return TRUE;
 
 		case ID_VIEW_WIDTHMARKERS:
-		case CHK_WIDTH:
 			info.wMarker ^= 1;
 			if (info.wMarker)
 			{
-				SendDlgItemMessage(g_hMain, CHK_WIDTH, BM_SETCHECK, BST_CHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 			}
 			else
 			{
-				SendDlgItemMessage(g_hMain, CHK_WIDTH, BM_SETCHECK, BST_UNCHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
 			}
 			CreateFontMap();
@@ -912,31 +874,26 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			info.hScr = 0;
 			info.vScr = 0;
 			info.Zoom = 1.0f;
-			SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 1, 0);
 
 			if (Flags & SHOW_GRID)
 			{
 				info.Grid = true;
-				SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_CHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 			}
 			else
 			{
 				info.Grid = false;
-				SendDlgItemMessage(g_hMain, CHK_GRID, BM_SETCHECK, BST_UNCHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_UNCHECKED);
 			}
 
 			if (Flags & SHOW_WIDTH)
 			{
 				info.wMarker = true;
-				SendDlgItemMessage(hDlg, CHK_WIDTH, BM_SETCHECK, BST_CHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 			}
 			else
 			{
 				info.wMarker = false;
-				SendDlgItemMessage(hDlg, CHK_WIDTH, BM_SETCHECK, BST_UNCHECKED, 0);
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
 			}
 
@@ -967,49 +924,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			SendMessage(g_hMain, WM_APP + 1, 0, 0);
 
 			CreateFontMap();
-			return TRUE;
-
-		case ID_IMPORT_FONTDATA:
-			Text[0] = NULL;
-			if (GetSourceName(Text, "Import Font Data", "Font Data Files (CSV)\0*.csv\0All Files\0*.*\0\0", "csv"))
-			{
-				if (Fnt.ImportData(Text))
-				{
-					// Set font face
-					//wsprintf(Text, "%d", Fnt.GetFontName());
-					//SendDlgItemMessage(g_hMain, CBO_FONTS, CB_FINDSTRING, (WPARAM)1, (LPARAM)Text);
-
-					// Set Start Char
-					wsprintf(Text, "%d", Fnt.GetBaseChar());
-					SendDlgItemMessage(g_hMain, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
-
-					// Set Bold Checkbox
-					/*if (Fnt.GetFontWeight() == FW_NORMAL)
-					{
-					    SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_UNCHECKED, 0);
-					}
-					else
-					{
-					    SendDlgItemMessage(g_hMain, CHK_BOLD, BM_SETCHECK, BST_CHECKED, 0);
-					}
-
-					// Set Italic Checkbox
-					if (Fnt.GetFontItalic())
-					{
-					    SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_CHECKED, 0);
-					}
-					else
-					{
-					    SendDlgItemMessage(g_hMain, CHK_ITAL, BM_SETCHECK, BST_UNCHECKED, 0);
-					}*/
-
-					CreateFontMap();
-				}
-				else
-				{
-					MessageBox(hDlg, "Import Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-				}
-			}
 			return TRUE;
 
 		case ID_EXPORT_BITMAP:
@@ -1073,70 +987,20 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case ID_VIEW_ZOOMIN:
-			RowDex = SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_GETCURSEL, 0, 0);
-			switch (RowDex)
+			if (info.Zoom < 4.0f)
 			{
-			case 0:
-				info.Zoom = 0.5f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 1, 0);
+				info.Zoom *= 2;
 				CalcScroll();
 				CreateFontMap();
-				return TRUE;
-
-			case 1:
-				info.Zoom = 1.0f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 2, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
-
-			case 2:
-				info.Zoom = 2.0f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 3, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
-
-			case 3:
-				info.Zoom = 4.0f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 4, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
 			}
 			return TRUE;
 
 		case ID_VIEW_ZOOMOUT:
-			RowDex = SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_GETCURSEL, 0, 0);
-			switch (RowDex)
+			if (info.Zoom > 0.5f)
 			{
-			case 1:
-				info.Zoom = 0.25f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 0, 0);
+				info.Zoom /= 2;
 				CalcScroll();
 				CreateFontMap();
-				return TRUE;
-
-			case 2:
-				info.Zoom = 0.5f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 1, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
-
-			case 3:
-				info.Zoom = 1.0f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 2, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
-
-			case 4:
-				info.Zoom = 2.0f;
-				SendDlgItemMessage(g_hMain, CBO_ZOOM, CB_SETCURSEL, 3, 0);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
 			}
 			return TRUE;
 
@@ -1181,7 +1045,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case ID_HELP_ABOUT:
-			DialogBox(g_hInstance, MAKEINTRESOURCE(DLG_ABOUT), g_hMain, AboutProc);
+			MessageBox(g_hMain, "bfg 0.0", "About bfg", MB_OK);
 			return TRUE;
 
 		}
@@ -1412,33 +1276,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				}
 
 				info.MaxChars = Fnt.GetSize(MAXCHARS);
-				CalcScroll();
-				CreateFontMap();
-				return TRUE;
-
-			case CBO_ZOOM:
-				RowDex = SendDlgItemMessage(hDlg, CBO_ZOOM, CB_GETCURSEL, 0, 0);
-				if (RowDex == 0)
-				{
-					info.Zoom = 0.25;
-				}
-				else if (RowDex == 1)
-				{
-					info.Zoom = 0.5f;
-				}
-				else if (RowDex == 2)
-				{
-					info.Zoom = 1.0f;
-				}
-				else if (RowDex == 3)
-				{
-					info.Zoom = 2.0f;
-				}
-				else if (RowDex == 4)
-				{
-					info.Zoom = 4.0f;
-				}
-
 				CalcScroll();
 				CreateFontMap();
 				return TRUE;

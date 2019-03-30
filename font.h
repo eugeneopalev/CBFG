@@ -1,8 +1,6 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "defs.h"
-
 #define SBM_OK              0x1
 #define SBM_ERR_NO_FILE     0x2
 #define SBM_ERR_MEM_FAIL    0x4
@@ -82,7 +80,6 @@ public:
 
 	bool SaveFont(int Format, char *fname, int Flags = 0);
 	int  ExportMap(char *fname, int fmt);
-	bool ImportData(char *fname);
 
 	void SetCol(int Which, COLORREF Col);
 	COLORREF GetCol(int Which);
