@@ -20,12 +20,12 @@
 *.rc  text eol=crlf
 *.ico binary
 
+# Libraries
+*.lib binary
+
 # Image files
 *.bmp binary
-*.jpg binary
 
 # Other files
 *.txt text
 *.bat text eol=crlf
-*.chm binary
-*.bff binary

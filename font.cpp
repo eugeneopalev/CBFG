@@ -26,7 +26,7 @@ static unsigned char *zlib_compress(unsigned char *data, int data_len, int *out_
 	return buf;
 }
 
-//#define STBIW_ZLIB_COMPRESS zlib_compress
+#define STBIW_ZLIB_COMPRESS zlib_compress
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
