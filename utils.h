@@ -23,9 +23,9 @@ typedef struct
 char Limit(int Val);
 int LimitSelection(int Sel, int MaxChar);
 void CreateFontMap();
-HBITMAP *RenderFont(bool Markers);
-unsigned char *MakeAlpha();
+HBITMAP* RenderFont(bool Markers);
+unsigned char* MakeAlpha();
 void CalcScroll();
-int ExportMap(char *fname, int fmt);
+int ExportMap(char* fname, int fmt);
 
 #endif

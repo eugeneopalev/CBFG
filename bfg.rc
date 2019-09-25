@@ -1,5 +1,7 @@
 // Microsoft Visual C++ generated resource script.
 //
+#pragma code_page(65001)
+
 #include "resource.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
@@ -19,7 +21,6 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
-#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ BEGIN
     EDITTEXT        TXT_FONTWIDTH,40,39,24,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",SPN_FONTWIDTH,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,64,38,11,12
     CONTROL         "",ODR_FORECOL,"Static",SS_OWNERDRAW | SS_NOTIFY | WS_BORDER,111,81,12,11
-    CONTROL         "",ODR_BACKCOL,"Static",SS_OWNERDRAW | SS_NOTIFY | WS_BORDER,117,73,6,6
+    CONTROL         "",ODR_BACKCOL,"Static",SS_OWNERDRAW | SS_NOTIFY | WS_BORDER,113,73,10,6
     COMBOBOX        CBO_IMGXRES,49,128,35,72,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        CBO_IMGYRES,89,128,35,72,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        TXT_CELLHEIGHT,49,144,75,12,ES_AUTOHSCROLL | ES_NUMBER

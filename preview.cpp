@@ -41,7 +41,7 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	BLENDFUNCTION bf;      // structure for alpha blending
 	HBITMAP hbitmap;       // bitmap handle
 	BITMAPINFO bmi;        // bitmap header
-	VOID *pvBits;          // pointer to DIB section
+	VOID* pvBits;          // pointer to DIB section
 	ULONG   ulWindowWidth, ulWindowHeight;      // window width/height
 	ULONG   ulBitmapWidth, ulBitmapHeight;      // bitmap width/height
 	RECT    rt;            // used for getting window dimensions
@@ -95,7 +95,7 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	{
 		for (x = 0; x < ulBitmapWidth; x++)
 		{
-			((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0x000000ff;
+			((UINT32*)pvBits)[x + y * ulBitmapWidth] = 0x000000ff;
 		}
 	}
 
@@ -103,9 +103,7 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	bf.BlendFlags = 0;
 	bf.SourceConstantAlpha = 0x7f;  // half of 0xff = 50% transparency
 	bf.AlphaFormat = 0;             // ignore source alpha channel
-	if (!AlphaBlend(hdcwnd, ulWindowWidth / 5, ulWindowHeight / 5,
-	                ulBitmapWidth, ulBitmapHeight,
-	                hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf))
+	if (!AlphaBlend(hdcwnd, ulWindowWidth / 5, ulWindowHeight / 5, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf))
 	{
 		return;    // alpha blend failed
 	}
@@ -116,21 +114,20 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	{
 		for (x = 0; x < ulBitmapWidth; x++)
 		{
-			if ((x > (int)(ulBitmapWidth / 5)) && (x < (ulBitmapWidth - ulBitmapWidth / 5)) &&
-			        (y > (int)(ulBitmapHeight / 5)) && (y < (ulBitmapHeight - ulBitmapHeight / 5)))
+			if ((x > (int)(ulBitmapWidth / 5)) && (x < (ulBitmapWidth - ulBitmapWidth / 5)) && (y > (int)(ulBitmapHeight / 5)) && (y < (ulBitmapHeight - ulBitmapHeight / 5)))
 				//in middle of bitmap: source alpha = 0 (transparent).
 				// This means multiply each color component by 0x00.
 				// Thus, after AlphaBlend, we have a, 0x00 * r,
 				// 0x00 * g,and 0x00 * b (which is 0x00000000)
 				// for now, set all pixels to red
 			{
-				((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0x00ff0000;
+				((UINT32*)pvBits)[x + y * ulBitmapWidth] = 0x00ff0000;
 			}
 			else
 				// in the rest of bitmap, source alpha = 0xff (opaque)
 				// and set all pixels to blue
 			{
-				((UINT32 *)pvBits)[x + y * ulBitmapWidth] = 0xff0000ff;
+				((UINT32*)pvBits)[x + y * ulBitmapWidth] = 0xff0000ff;
 			}
 		}
 	}
@@ -162,11 +159,11 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 			fAlphaFactor = (float)ubAlpha / (float)0xff;
 			// multiply each pixel by fAlphaFactor, so each component
 			// is less than or equal to the alpha value.
-			((UINT32 *)pvBits)[x + y * ulBitmapWidth]
-			    = (ubAlpha << 24) |                       //0xaa000000
-			      ((UCHAR)(ubRed * fAlphaFactor) << 16) |  //0x00rr0000
-			      ((UCHAR)(ubGreen * fAlphaFactor) << 8) | //0x0000gg00
-			      ((UCHAR)(ubBlue   * fAlphaFactor));      //0x000000bb
+			((UINT32*)pvBits)[x + y * ulBitmapWidth]
+				= (ubAlpha << 24) |                       //0xaa000000
+				((UCHAR)(ubRed * fAlphaFactor) << 16) |  //0x00rr0000
+				((UCHAR)(ubGreen * fAlphaFactor) << 8) | //0x0000gg00
+				((UCHAR)(ubBlue * fAlphaFactor));      //0x000000bb
 		}
 	}
 
@@ -174,10 +171,7 @@ void DrawAlphaBlend(HWND hWnd, HDC hdcwnd)
 	bf.BlendFlags = 0;
 	bf.AlphaFormat = AC_SRC_ALPHA;   // use source alpha
 	bf.SourceConstantAlpha = 0xbf;   // use constant alpha, with 75% opaqueness
-	AlphaBlend(hdcwnd, ulWindowWidth / 5,
-	           ulWindowHeight / 5 + 2 * ulWindowHeight, ulBitmapWidth,
-	           ulBitmapHeight, hdc, 0, 0, ulBitmapWidth,
-	           ulBitmapHeight, bf);
+	AlphaBlend(hdcwnd, ulWindowWidth / 5, ulWindowHeight / 5 + 2 * ulWindowHeight, ulBitmapWidth, ulBitmapHeight, hdc, 0, 0, ulBitmapWidth, ulBitmapHeight, bf);
 
 	// do cleanup
 	DeleteObject(hbitmap);
@@ -232,7 +226,6 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_INITDIALOG:
 		if (!lstrlen(PText))
 		{
-			srand((unsigned int)time(NULL));
 			offset = rand() % 13;
 			lstrcpy(PText, &Sample[offset][0]);
 		}

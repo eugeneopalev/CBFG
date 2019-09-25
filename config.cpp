@@ -233,8 +233,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				break;
 
 				/*case TEXTCOL:
-				    lCfg.ForeCol.Red = Red;
-				    break;*/
+					lCfg.ForeCol.Red = Red;
+					break;*/
 			}
 		}
 
@@ -263,8 +263,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				break;
 
 				/*case TEXTCOL:
-				    lCfg.ForeCol.Green = Green;
-				    break;*/
+					lCfg.ForeCol.Green = Green;
+					break;*/
 			}
 		}
 
@@ -293,8 +293,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				break;
 
 				/*case TEXTCOL:
-				    lCfg.ForeCol.Blue = Blue;
-				    break;*/
+					lCfg.ForeCol.Blue = Blue;
+					break;*/
 			}
 		}
 
@@ -343,8 +343,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 
 					/*case TEXTCOL:
-					    lCfg.ForeCol.Red = Val;
-					    break;*/
+						lCfg.ForeCol.Red = Val;
+						break;*/
 				}
 
 				SendDlgItemMessage(hDlg, SLD_RED, TBM_SETPOS, TRUE, (LPARAM)Val);
@@ -388,8 +388,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 
 					/*case TEXTCOL:
-					    lCfg.ForeCol.Green = Val;
-					    break;*/
+						lCfg.ForeCol.Green = Val;
+						break;*/
 				}
 
 				SendDlgItemMessage(hDlg, SLD_GREEN, TBM_SETPOS, TRUE, (LPARAM)Val);
@@ -433,8 +433,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 
 					/*case TEXTCOL:
-					    lCfg.ForeCol.Blue = Val;
-					    break;*/
+						lCfg.ForeCol.Blue = Val;
+						break;*/
 				}
 				SendDlgItemMessage(hDlg, SLD_BLUE, TBM_SETPOS, TRUE, (LPARAM)Val);
 				InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
@@ -551,8 +551,8 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 					break;
 
 					/*case TEXTCOL:
-					    SetConfigRGB(hDlg, lCfg.ForeCol);
-					    break;*/
+						SetConfigRGB(hDlg, lCfg.ForeCol);
+						break;*/
 				}
 
 				InvalidateRect(GetDlgItem(hDlg, ODR_COLOR), NULL, FALSE);
@@ -735,7 +735,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case IDDEFAULT:
 			if (MessageBox(hDlg, "Are you sure you want to revert to the default settings?",
-			               "Reset all?", MB_YESNO | MB_ICONQUESTION) == IDNO)
+				"Reset all?", MB_YESNO | MB_ICONQUESTION) == IDNO)
 			{
 				return TRUE;
 			}

@@ -7,11 +7,11 @@
 
 #include "zlib/zlib.h"
 
-static unsigned char *zlib_compress(unsigned char *data, int data_len, int *out_len, int quality)
+static unsigned char* zlib_compress(unsigned char* data, int data_len, int* out_len, int quality)
 {
 	uLong bufSize = compressBound(data_len);
 
-	unsigned char *buf = (unsigned char *)malloc(bufSize);
+	unsigned char* buf = (unsigned char*)malloc(bufSize);
 	if (buf == NULL)
 	{
 		return NULL;
@@ -251,7 +251,7 @@ long Font::GetFontWidth()
 	return lf_.lfWidth;
 }
 
-bool Font::SetFontName(char *NewName)
+bool Font::SetFontName(char* NewName)
 {
 	if (lstrcpy(lf_.lfFaceName, NewName))
 	{
@@ -263,7 +263,7 @@ bool Font::SetFontName(char *NewName)
 	}
 }
 
-char *Font::GetFontName()
+char* Font::GetFontName()
 {
 	return lf_.lfFaceName;
 }
@@ -372,7 +372,7 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	RECT CharArea;
 	char Symbol[2];
 	int eVal;
-	unsigned char *img;
+	unsigned char* img;
 
 	// create device context
 	hdc = CreateCompatibleDC(hdc);
@@ -392,7 +392,7 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	bmi.bmiHeader.biBitCount = 32;
 	bmi.bmiHeader.biCompression = BI_RGB;
 	bmi.bmiHeader.biSizeImage = (MapWidth * MapHeight) * 4;
-	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void **)&img, NULL, 0);
+	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void**)&img, NULL, 0);
 	SelectObject(hdc, hBitmap);
 
 	// draw background
@@ -498,8 +498,8 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 		return false;
 	}
 
-	unsigned char *a = img + 3;
-	unsigned char *b = (unsigned char *)bmInfo.dsBm.bmBits;
+	unsigned char* a = img + 3;
+	unsigned char* b = (unsigned char*)bmInfo.dsBm.bmBits;
 	for (int i = 0; i < MapWidth * MapHeight; i++)
 	{
 		*a = *b;
@@ -523,7 +523,7 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 	HRGN ClipRgn;
 	RECT CharArea;
 	char Symbol[2];
-	unsigned char *img;
+	unsigned char* img;
 
 	//SelectObject(hdc, GetStockObject(DC_PEN));
 	//SelectObject(hdc, GetStockObject(DC_BRUSH));
@@ -536,7 +536,7 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 	bmi.bmiHeader.biBitCount = 8;
 	bmi.bmiHeader.biCompression = BI_RGB;
 	bmi.bmiHeader.biSizeImage = MapWidth * MapHeight;
-	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void **)&img, NULL, 0);
+	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void**)&img, NULL, 0);
 	hOldBitmap = (HBITMAP)SelectObject(hdc, hBitmap);
 
 	// draw background
@@ -581,11 +581,12 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 	return hBitmap;
 }
 
-int Font::LoadConfig(const char *fname)
+int Font::LoadConfig(const char* fname)
 {
+#if 0
 	std::ifstream cfgfile;
 	unsigned long fSize;
-	char *dat;
+	char* dat;
 	char Hdr[7];
 	int tVal, Flags;
 
@@ -617,7 +618,7 @@ int Font::LoadConfig(const char *fname)
 
 	if (lstrcmp(Hdr, "BFGCFG"))
 	{
-		delete [] dat;
+		delete[] dat;
 		return -1;
 	}
 
@@ -635,13 +636,17 @@ int Font::LoadConfig(const char *fname)
 	memcpy(&SelCol, &dat[58], sizeof(SelCol));
 	memcpy(&BkCol, &dat[82], sizeof(BkCol));
 
-	delete [] dat;
+	delete[] dat;
 
 	return Flags;
+#endif
+
+	return 0;
 }
 
-bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
+bool Font::SaveConfig(const char* fname, bool Grid, bool Width_)
 {
+#if 0
 	std::ofstream cfgfile;
 	int tVal, Flags = 0;
 
@@ -653,14 +658,14 @@ bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 	}
 
 	cfgfile.write("BFGCFG", 6);
-	cfgfile.write((const char *)&MapWidth, sizeof(int));
-	cfgfile.write((const char *)&MapHeight, sizeof(int));
-	cfgfile.write((const char *)&CellWidth, sizeof(int));
-	cfgfile.write((const char *)&CellHeight, sizeof(int));
+	cfgfile.write((const char*)&MapWidth, sizeof(int));
+	cfgfile.write((const char*)&MapHeight, sizeof(int));
+	cfgfile.write((const char*)&CellWidth, sizeof(int));
+	cfgfile.write((const char*)&CellHeight, sizeof(int));
 	tVal = (int)lf_.lfHeight;
-	cfgfile.write((const char *)&tVal, sizeof(int));
+	cfgfile.write((const char*)&tVal, sizeof(int));
 	tVal = (int)lf_.lfWidth;
-	cfgfile.write((const char *)&tVal, sizeof(int));
+	cfgfile.write((const char*)&tVal, sizeof(int));
 	if (Grid)
 	{
 		Flags |= SHOW_GRID;
@@ -669,13 +674,14 @@ bool Font::SaveConfig(const char *fname, bool Grid, bool Width_)
 	{
 		Flags |= SHOW_WIDTH;
 	}
-	cfgfile.write((const char *)&Flags, sizeof(Flags));
-	cfgfile.write((const char *)&GridCol, sizeof(GridCol));
-	cfgfile.write((const char *)&WidthCol, sizeof(WidthCol));
-	cfgfile.write((const char *)&SelCol, sizeof(SelCol));
-	cfgfile.write((const char *)&BkCol, sizeof(BkCol));
+	cfgfile.write((const char*)&Flags, sizeof(Flags));
+	cfgfile.write((const char*)&GridCol, sizeof(GridCol));
+	cfgfile.write((const char*)&WidthCol, sizeof(WidthCol));
+	cfgfile.write((const char*)&SelCol, sizeof(SelCol));
+	cfgfile.write((const char*)&BkCol, sizeof(BkCol));
 
 	cfgfile.close();
+#endif
 
 	return true;
 }
@@ -694,7 +700,7 @@ void Font::ResetOffsets()
 	gWidthMod = gHMod = gVMod = 0;
 }
 
-bool Font::SaveFont(int Format, char *fname, int flags)
+bool Font::SaveFont(int Format, char* fname, int flags)
 {
 	bool Inv, Sat;
 	Inv = Sat = false;
@@ -718,7 +724,7 @@ bool Font::SaveFont(int Format, char *fname, int flags)
 	return false;
 }
 
-int Font::ExportMap(char *fname, int fmt)
+int Font::ExportMap(char* fname, int fmt)
 {
 	HWND hImgWin;
 	HDC hdc;
@@ -763,8 +769,9 @@ int Font::ExportMap(char *fname, int fmt)
 	return Result;
 }
 
-bool Font::ExportCSVData(char *fname)
+bool Font::ExportCSVData(char* fname)
 {
+#if 0
 	std::ofstream out;
 	int Loop;
 
@@ -811,6 +818,7 @@ bool Font::ExportCSVData(char *fname)
 	out << "AntiAlias," << (int)lf_.lfQuality << "\n";
 
 	out.close();
+#endif
 
 	return TRUE;
 }

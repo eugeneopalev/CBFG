@@ -16,7 +16,7 @@ char Limit(int Val)
 		Val = 127;
 	}
 
-	return (char) Val;
+	return (char)Val;
 }
 
 int LimitSelection(int Sel, int MaxChar)
@@ -130,14 +130,11 @@ void CreateFontMap()
 
 	// Copy Font into buffer
 	SetStretchBltMode(Mdc, WHITEONBLACK);
-	StretchBlt(Mdc, 0, 0, (int)(MapWidth * info.Zoom), (int)(MapHeight * info.Zoom),
-	           Fdc, (int)(info.hScr / info.Zoom), (int)(info.vScr / info.Zoom),
-	           MapWidth, MapHeight, SRCCOPY);
+	StretchBlt(Mdc, 0, 0, (int)(MapWidth * info.Zoom), (int)(MapHeight * info.Zoom), Fdc, (int)(info.hScr / info.Zoom), (int)(info.vScr / info.Zoom), MapWidth, MapHeight, SRCCOPY);
 
 	// Copy Font into window
 	SetStretchBltMode(Wdc, WHITEONBLACK);
-	BitBlt(Wdc, 0, 0, (int)ClipArea.right, (int)ClipArea.bottom,
-	       Mdc, 0, 0, SRCCOPY);
+	BitBlt(Wdc, 0, 0, (int)ClipArea.right, (int)ClipArea.bottom, Mdc, 0, 0, SRCCOPY);
 
 	// Clean up
 	DeleteObject(FntMap);

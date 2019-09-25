@@ -18,7 +18,7 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-BOOL GetTargetName(char *fname, const char *Title, const char *filter, const char *DefExt)
+BOOL GetTargetName(char* fname, const char* Title, const char* filter, const char* DefExt)
 {
 	OPENFILENAME fileopeninfo;
 
@@ -198,7 +198,6 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	int RowDex;
 	int tVal, Flags;
 	SCROLLINFO scrInf;
-	std::string VerData, VerNum;
 	RECT rcArea;
 	HBRUSH hBr;
 	COLORREF ColVal;
@@ -549,8 +548,8 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_NOTIFY:
 	{
-		NMUPDOWN *Hdr;
-		Hdr = (LPNMUPDOWN) lParam;
+		NMUPDOWN* Hdr;
+		Hdr = (LPNMUPDOWN)lParam;
 
 		if (Hdr->hdr.code == UDN_DELTAPOS)
 		{
@@ -1284,9 +1283,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		}
 
-		default:
-			return 0;
-		}
+	default:
+		return 0;
+	}
 
 	}
 

@@ -9,8 +9,5 @@
 #include <commdlg.h>
 
 #include <stdlib.h>
-#include <time.h>
-
-#include <fstream>
 
 #endif

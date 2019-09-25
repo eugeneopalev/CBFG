@@ -10,7 +10,7 @@
 class Font
 {
 public:
-	Font():
+	Font() :
 		color_(RGB(255, 255, 255)),
 		BkCol(RGB(0, 0, 0)),
 		GridCol(RGB(170, 0, 170)),
@@ -69,17 +69,17 @@ public:
 	long SetFontWidth(long);
 	long GetFontQuality();
 	long SetFontQuality(long);
-	char *GetFontName();
-	bool SetFontName(char *);
+	char* GetFontName();
+	bool SetFontName(char*);
 	bool CalcWidths(HDC);
 	HBITMAP DrawBitmap(HDC hdc, int flags, int sel);
 
-	int  LoadConfig(const char *fname);
-	bool SaveConfig(const char *fname, bool Grid, bool Width_);
+	int  LoadConfig(const char* fname);
+	bool SaveConfig(const char* fname, bool Grid, bool Width_);
 	void ResetOffsets();
 
-	bool SaveFont(int Format, char *fname, int Flags = 0);
-	int  ExportMap(char *fname, int fmt);
+	bool SaveFont(int Format, char* fname, int Flags = 0);
+	int  ExportMap(char* fname, int fmt);
 
 	void SetCol(int Which, COLORREF Col);
 	COLORREF GetCol(int Which);
@@ -115,7 +115,7 @@ private:
 	COLORREF BkCol, GridCol, WidthCol, SelCol;
 
 	bool IsPower(int TestVal);
-	bool ExportCSVData(char *fname);
+	bool ExportCSVData(char* fname);
 };
 
 #endif
