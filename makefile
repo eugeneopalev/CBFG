@@ -9,11 +9,10 @@ OBJS = \
 	$(DIR)\font.obj \
 	$(DIR)\pch.obj \
 	$(DIR)\preview.obj \
-	$(DIR)\saveopt.obj \
-	$(DIR)\utils.obj
+	$(DIR)\saveopt.obj
 
 DEFS = /DNDEBUG
-LIBS = user32.lib gdi32.lib comdlg32.lib msimg32.lib zlib\zlib.lib
+LIBS = user32.lib gdi32.lib comdlg32.lib shlwapi.lib msimg32.lib zlib\zlib.lib
 
 CC = @cl /nologo /c /MP
 RC = @rc /nologo

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "font.h"
-#include "defs.h"
+#include "config.h"
 #include "bfg.h"
 #include "resource.h"
 
@@ -249,7 +249,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		GetClientRect(hGL, &glRect);
 		//glViewport(0, 0, glRect.right, glRect.bottom);
-		//BkCol = Fnt.GetCol(BACKCOL);
+		//BkCol = g_font.GetCol(BACKCOL);
 		//glClearColor(((float)BkCol.Red / 255.0f), ((float)BkCol.Green / 255.0f), ((float)BkCol.Blue / 255.0f), 0.0f);
 
 		/*glMatrixMode(GL_PROJECTION);
@@ -262,9 +262,9 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		nLines = SendDlgItemMessage(hDlg, TXT_PREVIEW, EM_GETLINECOUNT, 0, 0);
 
-		RowPitch = Fnt.GetSize(MAPWIDTH) / Fnt.GetSize(CELLWIDTH);
-		RowFactor = (float)Fnt.GetSize(CELLHEIGHT) / (float)Fnt.GetSize(MAPHEIGHT);
-		ColFactor = (float)Fnt.GetSize(CELLWIDTH) / (float)Fnt.GetSize(MAPWIDTH);
+		RowPitch = g_font.GetSize(MAPWIDTH) / g_font.GetSize(CELLWIDTH);
+		RowFactor = (float)g_font.GetSize(CELLHEIGHT) / (float)g_font.GetSize(MAPHEIGHT);
+		ColFactor = (float)g_font.GetSize(CELLWIDTH) / (float)g_font.GetSize(MAPWIDTH);
 
 		//glBegin(GL_QUADS);
 		for (Loop = 0; Loop != nLines; ++Loop)
@@ -276,23 +276,23 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			for (chLoop = 0; chLoop != lTxt; ++chLoop)
 			{
-				SrcRow = (Text[chLoop] - Fnt.GetBaseChar()) / RowPitch;
-				SrcCol = (Text[chLoop] - Fnt.GetBaseChar()) - (SrcRow * RowPitch);
+				SrcRow = (Text[chLoop] - g_font.GetBaseChar()) / RowPitch;
+				SrcCol = (Text[chLoop] - g_font.GetBaseChar()) - (SrcRow * RowPitch);
 				U = ColFactor * SrcCol;
 				V = RowFactor * SrcRow;
 
 				/*glTexCoord2f(U, V);
 				glVertex2i(CurX, CurY);
 				glTexCoord2f(U + ColFactor, V);
-				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY);
+				glVertex2i(CurX + g_font.GetSize(CELLWIDTH), CurY);
 				glTexCoord2f(U + ColFactor, V + RowFactor);
-				glVertex2i(CurX + Fnt.GetSize(CELLWIDTH), CurY + Fnt.GetSize(CELLHEIGHT));
+				glVertex2i(CurX + g_font.GetSize(CELLWIDTH), CurY + g_font.GetSize(CELLHEIGHT));
 				glTexCoord2f(U, V + RowFactor);
-				glVertex2i(CurX, CurY + Fnt.GetSize(CELLHEIGHT));*/
-				CurX += Fnt.GetCharVal(Text[chLoop], EWIDTH);
+				glVertex2i(CurX, CurY + g_font.GetSize(CELLHEIGHT));*/
+				CurX += g_font.GetCharVal(Text[chLoop], EWIDTH);
 			}
 			CurX = 0;
-			CurY += Fnt.GetSize(CELLHEIGHT);
+			CurY += g_font.GetSize(CELLHEIGHT);
 		}
 
 		SwapBuffers(glDC);
@@ -310,7 +310,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		hdcMem = CreateCompatibleDC(lpdis->hDC);
 
-		hBMP = Fnt.DrawBitmap(hdcMem, FALSE, -1);
+		hBMP = g_font.DrawBitmap(hdcMem, 0);
 		original = SelectObject(hdcMem, hBMP);
 
 #if 0
@@ -318,7 +318,7 @@ BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		bf.BlendFlags = 0;
 		bf.AlphaFormat = AC_SRC_ALPHA;  // use source alpha
 		bf.SourceConstantAlpha = 0xff;  // opaque (disable constant alpha)
-		AlphaBlend(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, Fnt.GetSize(MAPWIDTH), Fnt.GetSize(MAPHEIGHT), bf);
+		AlphaBlend(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, g_font.GetSize(MAPWIDTH), g_font.GetSize(MAPHEIGHT), bf);
 #endif
 
 		BitBlt(lpdis->hDC, lpdis->rcItem.left, lpdis->rcItem.top, lpdis->rcItem.right, lpdis->rcItem.bottom, hdcMem, 0, 0, SRCCOPY);

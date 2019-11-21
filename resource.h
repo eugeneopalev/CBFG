@@ -30,7 +30,6 @@
 #define TXT_CFG_CELLWIDTH               1008
 #define TXT_CELLHEIGHT                  1009
 #define TXT_CFG_CELLHEIGHT              1009
-#define CBO_ALIAS                       1010
 #define TXT_CFG_FONTHEIGHT              1010
 #define SPN_CELLWIDTH                   1011
 #define TXT_CFG_FONTWIDTH               1011
@@ -40,27 +39,16 @@
 #define CBO_IMGXRES                     1013
 #define SCR_VERT                        1014
 #define SPN_CFG_FONTWIDTH               1014
-#define CMD_UP                          1015
-#define CMD_RIGHT                       1016
-#define CMD_DOWN                        1017
-#define CMD_LEFT                        1018
 #define SCR_HOR                         1019
 #define CBO_IMGYRES                     1020
-#define RAD_ALL                         1024
-#define RAD_SEL                         1025
-#define TXT_XADJ                        1026
-#define TXT_YADJ                        1027
 #define CMD_SAVEOPT_8                   1027
-#define TXT_WADJ                        1028
 #define CMD_SAVEOPT_24                  1028
 #define ODR_COLOR                       1029
-#define TXT_WIDTH                       1029
 #define CMD_SAVEOPT_32                  1029
 #define SLD_RED                         1030
 #define SLD_GREEN                       1031
 #define SLD_BLUE                        1032
 #define CBO_CFG_IMGXSIZE                1033
-#define SPN_WIDTH                       1034
 #define CBO_CFG_IMGYSIZE                1034
 #define SPN_START                       1035
 #define TXT_START                       1036
@@ -71,8 +59,6 @@
 #define ID_OK                           1041
 #define CMD_OK                          1042
 #define IDC_GL                          1045
-#define ODR_FORECOL                     1046
-#define ODR_BACKCOL                     1047
 #define RES_PIC_PREVIEW                 1050
 #define IDC_BUTTON1                     1051
 #define IDC_SLIDER1                     1052
@@ -87,17 +73,13 @@
 #define ID_ANTIALIAS_NORMAL             40013
 #define ID_ANTIALIAS_CLEARTYPE          40014
 #define ID_FILE_EXPORT                  40016
-#define ID_EXPORT_TARGA                 40017
-#define ID_EXPORT_BITMAP                40018
-#define ID_EXPORT_FONTDATA              40019
 #define ID_FILE_RESET                   40024
 #define ID_TOOLS_CONFIGURATION          40030
 #define ID_VIEW_WIDTHMARKERS            40032
-#define ID_EXPORT_TARGA32               40034
 #define ID_TOOLS_PREVIEW                40040
 #define ID_COLOUR_SETTEXTCOLOUR         40048
 #define ID_COLOUR_SETBACKGROUNDCOLOUR   40049
-#define ID_EXPORT_PORTABLENETWORKGRAPHICS 40050
+#define ID_FILE_EXPORT40051             40051
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -105,7 +87,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        123
-#define _APS_NEXT_COMMAND_VALUE         40051
+#define _APS_NEXT_COMMAND_VALUE         40052
 #define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

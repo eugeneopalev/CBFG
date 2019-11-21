@@ -1,8 +1,7 @@
 #include "pch.h"
 #include "font.h"
-#include "defs.h"
+#include "config.h"
 #include "bfg.h"
-#include "utils.h"
 #include "resource.h"
 
 #include "zlib/zlib.h"
@@ -30,6 +29,56 @@ static unsigned char* zlib_compress(unsigned char* data, int data_len, int* out_
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
+
+Font::Font() :
+	color_(RGB(255, 255, 255)),
+	BkCol(RGB(0, 0, 0)),
+	GridCol(RGB(170, 0, 170)),
+	WidthCol(RGB(170, 170, 0)),
+	SelCol(RGB(0, 154, 0))
+{
+	ZeroMemory(&lf_, sizeof(lf_));
+
+	BaseChar = 32;
+
+	MapWidth = 256;
+	MapHeight = 256;
+	CellHeight = 32;
+	CellWidth = 32;
+
+	/*lf_.lfHeight = 20;
+	lf_.lfWidth = 0;
+	lf_.lfEscapement = 0;
+	lf_.lfOrientation = 0;
+	lf_.lfWeight = FW_NORMAL;
+	lf_.lfItalic = FALSE;
+	lf_.lfUnderline = FALSE;
+	lf_.lfStrikeOut = FALSE;
+	lf_.lfCharSet = DEFAULT_CHARSET;
+	lf_.lfOutPrecision = OUT_DEFAULT_PRECIS;
+	lf_.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+	lf_.lfQuality = NONANTIALIASED_QUALITY;
+	lf_.lfPitchAndFamily = DEFAULT_PITCH;
+	lf_.lfFaceName[0] = NULL;*/
+
+	stbi_flip_vertically_on_write(1);
+}
+
+Font::~Font()
+{
+}
+
+void Font::GetCharRect(HDC hdc, char chr, PRECT rect)
+{
+	char buf[2];
+
+	rect->left = 0;
+	rect->right = 0;
+	rect->top = 0;
+	rect->bottom = 0;
+	wsprintf(buf, "%c", chr);
+	int ret = DrawText(hdc, buf, -1, rect, DT_NOCLIP | DT_CALCRECT | DT_NOPREFIX);
+}
 
 int Font::SetSize(int Which, int NewSize)
 {
@@ -132,81 +181,13 @@ unsigned char Font::GetBaseChar()
 	return BaseChar;
 }
 
-int Font::SetGlobal(int Which, int Value)
-{
-	switch (Which)
-	{
-	case VOFFSET:
-		gVMod = Value;
-		break;
-
-	case HOFFSET:
-		gHMod = Value;
-		break;
-
-	case WIDTH:
-		gWidthMod = Value;
-		break;
-	}
-
-	return Value;
-}
-
-int Font::GetGlobal(int Which)
-{
-	switch (Which)
-	{
-	case VOFFSET:
-		return gVMod;
-
-	case HOFFSET:
-		return gHMod;
-
-	case WIDTH:
-		return gWidthMod;
-	}
-
-	return 0;
-}
-
-int Font::SetCharVal(int Char, int Which, int NewVal)
-{
-	switch (Which)
-	{
-	case WOFFSET:
-		WidthMod[Char] = NewVal;
-		break;
-
-	case HOFFSET:
-		HMod[Char] = NewVal;
-		break;
-
-	case VOFFSET:
-		VMod[Char] = NewVal;
-		break;
-	}
-
-	return NewVal;
-}
-
 int Font::GetCharVal(int Char, int Which)
 {
 	switch (Which)
 	{
 	case WIDTH:
-		return BaseWidth[Char];
-
-	case HOFFSET:
-		return HMod[Char];
-
-	case VOFFSET:
-		return VMod[Char];
-
-	case WOFFSET:
-		return WidthMod[Char];
-
 	case EWIDTH:
-		return WidthMod[Char] + BaseWidth[Char] + gWidthMod;
+		return BaseWidth[Char];
 	}
 	return 0;
 }
@@ -325,44 +306,35 @@ COLORREF Font::GetCol(int Which)
 		break;
 	}
 
-	return BkCol; // Default
+	return BkCol;
 }
 
 bool Font::CalcWidths(HDC hdc)
-{
-	BOOL Test;
-	int Letter;
+{	
 	ABC CharWidth[256];
 	int nttWidth[256];
+	int i;
 
-	// Populate Width data
-	Test = GetCharABCWidths(hdc, 0, 255, CharWidth);
-
-	if (Test)
+	if (GetCharABCWidths(hdc, 0, 255, CharWidth))
 	{
-		for (Letter = 0; Letter != 256; Letter++)
+		for (i = 0; i != 256; i++)
 		{
-			BaseWidth[Letter] = (unsigned char)(CharWidth[Letter].abcA + CharWidth[Letter].abcB + CharWidth[Letter].abcC);
+			BaseWidth[i] = CharWidth[i].abcA + CharWidth[i].abcB + CharWidth[i].abcC;
 		}
 	}
-	else
+	// GetCharWidth32 for non truetype fonts
+	else if (GetCharWidth32(hdc, 0, 255, nttWidth))
 	{
-		// GetCharWidth32 for non truetype fonts
-		Test = GetCharWidth32(hdc, 0, 255, nttWidth);
-
-		if (Test)
+		for (i = 0; i != 256; i++)
 		{
-			for (Letter = 0; Letter != 256; Letter++)
-			{
-				BaseWidth[Letter] = (unsigned char)nttWidth[Letter];
-			}
+			BaseWidth[i] = nttWidth[i];
 		}
 	}
 
 	return true;
 }
 
-HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
+HBITMAP Font::DrawBitmap(HDC hdc, int flags)
 {
 	HBITMAP hBitmap;
 	BITMAPINFO bmi;
@@ -374,7 +346,7 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	int eVal;
 	unsigned char* img;
 
-	// create device context
+	// create memory device context
 	hdc = CreateCompatibleDC(hdc);
 	if (hdc == NULL)
 	{
@@ -393,6 +365,13 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 	bmi.bmiHeader.biCompression = BI_RGB;
 	bmi.bmiHeader.biSizeImage = (MapWidth * MapHeight) * 4;
 	hBitmap = CreateDIBSection(hdc, &bmi, DIB_RGB_COLORS, (void**)&img, NULL, 0);
+	if (hBitmap == NULL)
+	{
+		return NULL;
+	}
+
+	ERROR_INVALID_PARAMETER;
+
 	SelectObject(hdc, hBitmap);
 
 	// draw background
@@ -407,18 +386,6 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 		SetDCBrushColor(hdc, BkCol);
 	}
 	Rectangle(hdc, 0, 0, MapWidth, MapHeight);
-
-	// draw selection
-	SetDCPenColor(hdc, SelCol);
-	SetDCBrushColor(hdc, SelCol);
-	if (sel > -1)
-	{
-		RowDex = (sel / (MapWidth / CellWidth));
-		ColDex = (sel - ((MapWidth / CellWidth) * RowDex));
-		ColDex *= CellWidth;
-		RowDex *= CellHeight;
-		Rectangle(hdc, ColDex, RowDex, ColDex + CellWidth, RowDex + CellHeight);
-	}
 
 	// draw characters
 	hFont = CreateFontIndirect(&lf_);
@@ -452,19 +419,21 @@ HBITMAP Font::DrawBitmap(HDC hdc, int flags, int sel)
 			// Draw width marker
 			if (flags & DFM_WIDTHLINE)
 			{
-				eVal = BaseWidth[Letter] + WidthMod[Letter] + gWidthMod;
+				eVal = BaseWidth[Letter];
 				MoveToEx(hdc, ColDex + eVal, RowDex, NULL);
 				LineTo(hdc, ColDex + eVal, RowDex + CellHeight);
 			}
 
 			// Render Char
-			CharArea.left = ColDex + HMod[Letter] + gHMod;
+			CharArea.left = ColDex;
 			CharArea.right = ColDex + CellWidth;
-			CharArea.top = RowDex + VMod[Letter] + gVMod;
+			CharArea.top = RowDex;
 			CharArea.bottom = RowDex + CellHeight;
 			wsprintf(Symbol, "%c", Letter);
 			Letter++;
-			DrawText(hdc, Symbol, -1, &CharArea, DT_LEFT | DT_NOPREFIX | DT_NOCLIP);
+			DrawText(hdc, Symbol, -1, &CharArea, DT_NOPREFIX | DT_NOCLIP);
+
+			GetCharRect(hdc, Letter, &CharArea);
 
 			// Remove clip region
 			SelectClipRgn(hdc, NULL);
@@ -562,13 +531,13 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 			SelectClipRgn(hdc, ClipRgn);
 
 			// Render Char
-			CharArea.left = ColDex + HMod[Letter] + gHMod;
+			CharArea.left = ColDex;
 			CharArea.right = ColDex + CellWidth;
-			CharArea.top = RowDex + VMod[Letter] + gVMod;
+			CharArea.top = RowDex;
 			CharArea.bottom = RowDex + CellHeight;
 			wsprintf(Symbol, "%c", Letter);
 			Letter++;
-			DrawText(hdc, Symbol, -1, &CharArea, DT_LEFT | DT_NOPREFIX | DT_NOCLIP);
+			DrawText(hdc, Symbol, -1, &CharArea, DT_NOPREFIX | DT_NOCLIP);
 
 			// Remove clip region
 			SelectClipRgn(hdc, NULL);
@@ -579,125 +548,6 @@ HBITMAP Font::DrawAlphaBitmap(HDC hdc, HFONT hFnt)
 	SelectObject(hdc, hOldBitmap);
 
 	return hBitmap;
-}
-
-int Font::LoadConfig(const char* fname)
-{
-#if 0
-	std::ifstream cfgfile;
-	unsigned long fSize;
-	char* dat;
-	char Hdr[7];
-	int tVal, Flags;
-
-	cfgfile.open(fname, std::ios::binary);
-
-	if (cfgfile.fail())
-	{
-		return -1;
-	}
-
-	cfgfile.seekg(0, std::ios_base::end);
-	fSize = (unsigned long)cfgfile.tellg();
-	cfgfile.seekg(0, std::ios_base::beg);
-
-	dat = new char[fSize];
-
-	if (!dat)
-	{
-		return -1;
-	}
-
-	cfgfile.read(dat, fSize);
-
-	cfgfile.close();
-
-	// Check ID
-	lstrcpyn(Hdr, dat, 7);
-	Hdr[6] = NULL;
-
-	if (lstrcmp(Hdr, "BFGCFG"))
-	{
-		delete[] dat;
-		return -1;
-	}
-
-	memcpy(&MapWidth, &dat[6], 4);
-	memcpy(&MapHeight, &dat[10], 4);
-	memcpy(&CellWidth, &dat[14], 4);
-	memcpy(&CellHeight, &dat[18], 4);
-	memcpy(&tVal, &dat[22], 4);
-	lf_.lfHeight = tVal;
-	memcpy(&tVal, &dat[26], 4);
-	lf_.lfWidth = tVal;
-	memcpy(&Flags, &dat[30], 4);
-	memcpy(&GridCol, &dat[34], sizeof(GridCol));
-	memcpy(&WidthCol, &dat[46], sizeof(WidthCol));
-	memcpy(&SelCol, &dat[58], sizeof(SelCol));
-	memcpy(&BkCol, &dat[82], sizeof(BkCol));
-
-	delete[] dat;
-
-	return Flags;
-#endif
-
-	return 0;
-}
-
-bool Font::SaveConfig(const char* fname, bool Grid, bool Width_)
-{
-#if 0
-	std::ofstream cfgfile;
-	int tVal, Flags = 0;
-
-	cfgfile.open(fname, std::ios_base::binary | std::ios_base::trunc);
-
-	if (cfgfile.fail())
-	{
-		return false;
-	}
-
-	cfgfile.write("BFGCFG", 6);
-	cfgfile.write((const char*)&MapWidth, sizeof(int));
-	cfgfile.write((const char*)&MapHeight, sizeof(int));
-	cfgfile.write((const char*)&CellWidth, sizeof(int));
-	cfgfile.write((const char*)&CellHeight, sizeof(int));
-	tVal = (int)lf_.lfHeight;
-	cfgfile.write((const char*)&tVal, sizeof(int));
-	tVal = (int)lf_.lfWidth;
-	cfgfile.write((const char*)&tVal, sizeof(int));
-	if (Grid)
-	{
-		Flags |= SHOW_GRID;
-	}
-	if (Width_)
-	{
-		Flags |= SHOW_WIDTH;
-	}
-	cfgfile.write((const char*)&Flags, sizeof(Flags));
-	cfgfile.write((const char*)&GridCol, sizeof(GridCol));
-	cfgfile.write((const char*)&WidthCol, sizeof(WidthCol));
-	cfgfile.write((const char*)&SelCol, sizeof(SelCol));
-	cfgfile.write((const char*)&BkCol, sizeof(BkCol));
-
-	cfgfile.close();
-#endif
-
-	return true;
-}
-
-void Font::ResetOffsets()
-{
-	int Loop;
-
-	for (Loop = 0; Loop != 256; ++Loop)
-	{
-		WidthMod[Loop] = 0;
-		VMod[Loop] = 0;
-		HMod[Loop] = 0;
-	}
-
-	gWidthMod = gHMod = gVMod = 0;
 }
 
 bool Font::SaveFont(int Format, char* fname, int flags)
@@ -724,17 +574,17 @@ bool Font::SaveFont(int Format, char* fname, int flags)
 	return false;
 }
 
-int Font::ExportMap(char* fname, int fmt)
+bool Font::Export(char* fname, int fmt)
 {
 	HWND hImgWin;
 	HDC hdc;
 	HBITMAP hBitmap;
-	int Result;
+	bool ret;
 
 	hImgWin = GetDlgItem(g_hMain, IMG_TEXT);
 	hdc = GetDC(hImgWin);
 
-	hBitmap = DrawBitmap(hdc, 0, -1);
+	hBitmap = DrawBitmap(hdc, 0);
 
 	DIBSECTION bmInfo;
 	if (!GetObject(hBitmap, sizeof(DIBSECTION), &bmInfo))
@@ -742,31 +592,27 @@ int Font::ExportMap(char* fname, int fmt)
 		return false;
 	}
 
-	stbi_flip_vertically_on_write(1);
-
 	switch (fmt)
 	{
 	case EXPORT_BMP:
-		Result = stbi_write_bmp(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		ret = stbi_write_bmp(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0;
 		break;
 
 	case EXPORT_TGA:
-	case EXPORT_TGA32:
-		Result = stbi_write_tga(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		ret = stbi_write_tga(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits) != 0;
 		break;
 
 	case EXPORT_PNG:
-		Result = stbi_write_png(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits, MapWidth * (32 / 8)) != 0 ? SBM_OK : SBM_ERR_UNSUPPORTED;
+		ret = stbi_write_png(fname, MapWidth, MapHeight, (32 / 8), bmInfo.dsBm.bmBits, MapWidth * (32 / 8)) != 0;
 		break;
 
 	default:
-		Result = false;
-		break;
+		ret = false;
 	}
 
 	ReleaseDC(hImgWin, hdc);
 
-	return Result;
+	return ret;
 }
 
 bool Font::ExportCSVData(char* fname)

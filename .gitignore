@@ -103,6 +103,3 @@ ServiceFabricBackup/
 
 # Local History for Visual Studio
 .localhistory/
-
-# CBFG config
-bfg.cfg

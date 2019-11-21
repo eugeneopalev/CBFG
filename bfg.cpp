@@ -1,16 +1,13 @@
 #include "pch.h"
-#include "font.h"
-#include "utils.h"
-#include "defs.h"
+#include "bfg.h"
+#include "config.h"
 #include "resource.h"
 
-//#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 HINSTANCE g_hInstance;
 HWND g_hMain;
-Font Fnt;
-AppInfo info;
-long OldProc;
+Font g_font;
 
 HBRUSH g_hBackground;
 
@@ -18,69 +15,177 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK PreviewWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK SaveOptProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
-BOOL GetTargetName(char* fname, const char* Title, const char* filter, const char* DefExt)
+void CreateFontMap()
 {
-	OPENFILENAME fileopeninfo;
+	HDC Wdc, Mdc, Fdc;
+	HWND hImgWin;
+	HBITMAP FntMap;
+	HBITMAP mMap;
+	BITMAPINFO BMDat;
+	RECT ClipArea;
+	HRGN ClipRgn;
+	int Opt = 0;
 
-	memset(&fileopeninfo, 0, sizeof(fileopeninfo));
-	fileopeninfo.lStructSize = sizeof(OPENFILENAME);
-	fileopeninfo.hwndOwner = g_hMain;
-	fileopeninfo.hInstance = g_hInstance;
-	fileopeninfo.lpstrFilter = filter;
-	fileopeninfo.nFilterIndex = 1;
-	fileopeninfo.lpstrFile = fname;
-	fileopeninfo.nMaxFile = 255;
-	fileopeninfo.lpstrTitle = Title;
-	fileopeninfo.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
-	fileopeninfo.lpstrDefExt = DefExt;
+	const int MapWidth = g_font.GetSize(MAPWIDTH);
+	const int MapHeight = g_font.GetSize(MAPHEIGHT);
 
-	return GetSaveFileName(&fileopeninfo);
-}
-
-BOOL CALLBACK TextWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	int Row, Col, Sel;
-
-	switch (msg)
+	// Get the target window
+	hImgWin = GetDlgItem(g_hMain, IMG_TEXT);
+	if (hImgWin == NULL)
 	{
-	case WM_ERASEBKGND:
-		return TRUE;
-		break;
-
-	case WM_LBUTTONDOWN:
-		SetFocus(hDlg);
-		if ((LOWORD(lParam) / info.Zoom) <= Fnt.GetSize(MAPWIDTH) && (HIWORD(lParam) / info.Zoom) <= Fnt.GetSize(MAPHEIGHT))
-		{
-			Row = (int)((HIWORD(lParam) + info.vScr) / info.Zoom) / Fnt.GetSize(CELLHEIGHT);
-			Col = (int)((LOWORD(lParam) + info.hScr) / info.Zoom) / Fnt.GetSize(CELLWIDTH);
-
-			// Limit selection
-			Sel = (Row * (Fnt.GetSize(MAPWIDTH) / Fnt.GetSize(CELLWIDTH))) + Col;
-			if (Sel + Fnt.GetBaseChar() > 255)
-			{
-				info.Select = 255 - Fnt.GetBaseChar();
-			}
-			else
-			{
-				info.Select = Sel;
-			}
-
-			if (info.ModAll == TRUE)
-			{
-				SendDlgItemMessage(g_hMain, RAD_SEL, BM_SETCHECK, BST_CHECKED, 0);
-				SendDlgItemMessage(g_hMain, RAD_ALL, BM_SETCHECK, BST_UNCHECKED, 0);
-				EnableWindow(GetDlgItem(g_hMain, TXT_WIDTH), TRUE);
-				EnableWindow(GetDlgItem(g_hMain, STA_WIDTH), TRUE);
-				info.ModAll = FALSE;
-			}
-
-			SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			CreateFontMap();
-		}
-		return TRUE;
+		return;
 	}
 
-	return CallWindowProc((WNDPROC)OldProc, hDlg, msg, wParam, lParam);
+	// Get target's DC
+	Wdc = GetDC(hImgWin);
+	if (Wdc == NULL)
+	{
+		return;
+	}
+
+	// Create memory DC
+	Mdc = CreateCompatibleDC(Wdc);
+	if (Mdc == NULL)
+	{
+		return;
+	}
+
+	// Create DC for font
+	Fdc = CreateCompatibleDC(Wdc);
+	if (Fdc == NULL)
+	{
+		return;
+	}
+
+	// Get size of target window
+	GetClientRect(hImgWin, &ClipArea);
+
+	// Specify bitmap type and size
+	BMDat.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	BMDat.bmiHeader.biWidth = ClipArea.right;
+	BMDat.bmiHeader.biHeight = ClipArea.right;
+	BMDat.bmiHeader.biPlanes = 1;
+	BMDat.bmiHeader.biBitCount = 24;
+	BMDat.bmiHeader.biCompression = BI_RGB;
+	BMDat.bmiHeader.biSizeImage = (ClipArea.right * ClipArea.right) * 3;
+
+	// Create the bitmap
+	mMap = CreateDIBSection(Mdc, &BMDat, DIB_RGB_COLORS, NULL, NULL, 0);
+	if (!mMap)
+	{
+		return;
+	}
+
+	// Select into memory DC
+	if (!SelectObject(Mdc, mMap))
+	{
+		return;
+	}
+
+	// Render the font
+	if (g_config.Grid)
+	{
+		Opt |= DFM_GRIDLINES;
+	}
+
+	if (g_config.wMarker)
+	{
+		Opt |= DFM_WIDTHLINE;
+	}
+
+	FntMap = g_font.DrawBitmap(Fdc, Opt);
+
+	// Select Font Map into Font DC
+	SelectObject(Fdc, FntMap);
+
+	// Gray out bitmap
+	FillRect(Mdc, &ClipArea, (HBRUSH)GetStockObject(GRAY_BRUSH));
+
+	// Set Clipping Region
+	ClipRgn = CreateRectRgn(ClipArea.left, ClipArea.top, ClipArea.right, ClipArea.bottom);
+	SelectClipRgn(Mdc, ClipRgn);
+
+	// Copy Font into buffer
+	SetStretchBltMode(Mdc, WHITEONBLACK);
+	StretchBlt(Mdc, 0, 0, (int)(MapWidth * g_config.Zoom), (int)(MapHeight * g_config.Zoom), Fdc, (int)(g_config.hScr / g_config.Zoom), (int)(g_config.vScr / g_config.Zoom), MapWidth, MapHeight, SRCCOPY);
+
+	// Copy Font into window
+	SetStretchBltMode(Wdc, WHITEONBLACK);
+	BitBlt(Wdc, 0, 0, (int)ClipArea.right, (int)ClipArea.bottom, Mdc, 0, 0, SRCCOPY);
+
+	// Clean up
+	DeleteObject(FntMap);
+	DeleteObject(mMap);
+	DeleteObject(ClipRgn);
+	DeleteObject(mMap);
+	ReleaseDC(hImgWin, Wdc);
+	DeleteDC(Mdc);
+	DeleteDC(Fdc);
+}
+
+void CalcScroll()
+{
+	RECT WinSize;
+	int XDelta, YDelta;
+	SCROLLINFO sInf;
+	int TexWidth, TexHt;
+	int RowPitch;
+
+	TexWidth = g_font.GetSize(MAPWIDTH);
+	TexHt = g_font.GetSize(MAPHEIGHT);
+	RowPitch = TexWidth / g_font.GetSize(CELLWIDTH);
+
+	GetClientRect(GetDlgItem(g_hMain, IMG_TEXT), &WinSize);
+
+	// Calculate something?
+	XDelta = (int)(TexWidth * g_config.Zoom) - WinSize.right;
+	YDelta = (int)(TexHt * g_config.Zoom) - WinSize.bottom;
+
+	if (XDelta > 0)
+	{
+		SetScrollRange(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, 0, XDelta, FALSE);
+
+		sInf.cbSize = sizeof(SCROLLINFO);
+		sInf.fMask = SIF_RANGE;
+		GetScrollInfo(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, &sInf);
+		if (g_config.hScr > sInf.nMax)
+		{
+			g_config.hScr = sInf.nMax;
+		}
+
+		SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
+		g_config.hScroll = TRUE;
+	}
+	else // Prevent offset pushing texture off left edge of window
+	{
+		SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, 0, TRUE);
+		g_config.hScr = 0;
+		EnableWindow(GetDlgItem(g_hMain, SCR_HOR), FALSE);
+		g_config.hScroll = FALSE;
+	}
+
+	if (YDelta > 0)
+	{
+		SetScrollRange(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, 0, YDelta, FALSE);
+
+		sInf.cbSize = sizeof(SCROLLINFO);
+		sInf.fMask = SIF_RANGE;
+		GetScrollInfo(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, &sInf);
+		if (g_config.vScr > sInf.nMax)
+		{
+			g_config.vScr = sInf.nMax;
+		}
+
+		SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, g_config.vScr, TRUE);
+		g_config.vScroll = TRUE;
+	}
+	else // Prevent offset pushing texture off top edge of window
+	{
+		SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, 0, TRUE);
+		g_config.vScr = 0;
+		EnableWindow(GetDlgItem(g_hMain, SCR_VERT), FALSE);
+		g_config.vScroll = FALSE;
+	}
 }
 
 UINT_PTR CALLBACK Lpcfhookproc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -233,7 +338,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETPOS, (WPARAM)FALSE, 0);
 		//SendDlgItemMessage(hDlg, IDC_SLIDER1, TBM_SETTICFREQ, (WPARAM)8, 0);
 
-		tVal = Fnt.GetSize(MAPWIDTH);
+		tVal = g_font.GetSize(MAPWIDTH);
 		if (tVal == 32)
 		{
 			SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_SETCURSEL, 1, 0);
@@ -271,7 +376,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_SETCURSEL, 0, 0);
 		}
 
-		tVal = Fnt.GetSize(MAPHEIGHT);
+		tVal = g_font.GetSize(MAPHEIGHT);
 		if (tVal == 32)
 		{
 			SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_SETCURSEL, 1, 0);
@@ -309,58 +414,28 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_SETCURSEL, 0, 0);
 		}
 
-		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_ADDSTRING, 0, (LPARAM)"None");
-		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_ADDSTRING, 0, (LPARAM)"Normal Anti-Alias");
-		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_ADDSTRING, 0, (LPARAM)"ClearType (WinXP Only)");
-		SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 0, 0);
-
-		wsprintf(Text, "%d", Fnt.GetSize(CELLWIDTH));
+		wsprintf(Text, "%d", g_font.GetSize(CELLWIDTH));
 		SendDlgItemMessage(hDlg, TXT_CELLWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-		wsprintf(Text, "%d", Fnt.GetSize(CELLHEIGHT));
+		wsprintf(Text, "%d", g_font.GetSize(CELLHEIGHT));
 		SendDlgItemMessage(hDlg, TXT_CELLHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
-		wsprintf(Text, "%d", Fnt.GetFontWidth());
+		wsprintf(Text, "%d", g_font.GetFontWidth());
 		SendDlgItemMessage(hDlg, TXT_FONTWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-		wsprintf(Text, "%d", Fnt.GetFontHeight());
+		wsprintf(Text, "%d", g_font.GetFontHeight());
 		SendDlgItemMessage(hDlg, TXT_FONTHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
 
 		SendDlgItemMessage(hDlg, SPN_CELLWIDTH, UDM_SETRANGE, 0, MAKELONG(256, 8));
 		SendDlgItemMessage(hDlg, SPN_CELLHEIGHT, UDM_SETRANGE, 0, MAKELONG(256, 8));
 		SendDlgItemMessage(hDlg, SPN_FONTHEIGHT, UDM_SETRANGE, 0, MAKELONG(256, 1));
 		SendDlgItemMessage(hDlg, SPN_FONTWIDTH, UDM_SETRANGE, 0, MAKELONG(256, 0));
-		SendDlgItemMessage(hDlg, SPN_WIDTH, UDM_SETRANGE, 0, MAKELONG(100, -100));
 		SendDlgItemMessage(hDlg, SPN_START, UDM_SETRANGE, 0, MAKELONG(254, 0));
 
-		SendDlgItemMessage(hDlg, RAD_ALL, BM_SETCHECK, BST_CHECKED, 0);
-
-		info.MaxChars = Fnt.GetSize(MAXCHARS);
+		g_config.MaxChars = g_font.GetSize(MAXCHARS);
 
 		PostMessage(hDlg, WM_APP, 0, 0);
 		return TRUE;
 
-	case WM_DRAWITEM:
-		if (wParam == ODR_FORECOL)
-		{
-			dc = ((LPDRAWITEMSTRUCT)lParam)->hDC;
-			GetClientRect(hDlg, &rcArea);
-			hBr = CreateSolidBrush(Fnt.GetColor());
-			FillRect(dc, &rcArea, hBr);
-			DeleteObject(hBr);
-		}
-
-		if (wParam == ODR_BACKCOL)
-		{
-			dc = ((LPDRAWITEMSTRUCT)lParam)->hDC;
-			GetClientRect(hDlg, &rcArea);
-			hBr = CreateSolidBrush(Fnt.GetCol(BACKCOL));
-			FillRect(dc, &rcArea, hBr);
-			DeleteObject(hBr);
-		}
-
-		CreateFontMap();
-		return TRUE;
-
 	case WM_APP:
-		if (info.Grid)
+		if (g_config.Grid)
 		{
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 		}
@@ -369,7 +444,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_UNCHECKED);
 		}
 
-		if (info.wMarker)
+		if (g_config.wMarker)
 		{
 			CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 		}
@@ -381,48 +456,26 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		EnableWindow(GetDlgItem(g_hMain, SCR_HOR), FALSE);
 		EnableWindow(GetDlgItem(g_hMain, SCR_VERT), FALSE);
 
-		Fnt.SetBaseChar(32);
-		wsprintf(Text, "%d", Fnt.GetBaseChar());
+		g_font.SetBaseChar(32);
+		wsprintf(Text, "%d", g_font.GetBaseChar());
 		SendDlgItemMessage(hDlg, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
 
 		SendMessage(g_hMain, WM_APP + 1, 0, 0);
-		EnableWindow(GetDlgItem(g_hMain, TXT_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(g_hMain, STA_WIDTH), FALSE);
 
 		CalcScroll();
 		CreateFontMap();
 		return FALSE;
 
-	case WM_APP + 1: // Control Update
-		if (info.ModAll == TRUE)
-		{
-			wsprintf(Text, "%d", Fnt.GetGlobal(HOFFSET));
-			SendDlgItemMessage(g_hMain, TXT_XADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "%d", Fnt.GetGlobal(VOFFSET));
-			SendDlgItemMessage(g_hMain, TXT_YADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "%d", Fnt.GetGlobal(WIDTH));
-			SendDlgItemMessage(g_hMain, TXT_WADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			SendDlgItemMessage(g_hMain, TXT_WIDTH, WM_SETTEXT, 0, (LPARAM)"");
-		}
-		else
-		{
-			wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), HOFFSET));
-			SendDlgItemMessage(g_hMain, TXT_XADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), VOFFSET));
-			SendDlgItemMessage(g_hMain, TXT_YADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), WOFFSET));
-			SendDlgItemMessage(g_hMain, TXT_WADJ, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), EWIDTH));
-			SendDlgItemMessage(g_hMain, TXT_WIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-			wsprintf(Text, "Adjust Selection (%d) Only", info.Select + Fnt.GetBaseChar());
-			SendDlgItemMessage(g_hMain, RAD_SEL, WM_SETTEXT, 0, (LPARAM)Text);
-		}
-		return TRUE;
-
 	case WM_CLOSE:
 	case WM_DESTROY:
 		EndDialog(hDlg, 0);
 		PostQuitMessage(0);
+		return TRUE;
+
+	case WM_GETMINMAXINFO:
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.x = 600;
+		((LPMINMAXINFO)lParam)->ptMinTrackSize.y = 400;
 		return TRUE;
 
 	case WM_HSCROLL:
@@ -436,52 +489,52 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case SB_THUMBTRACK:
 		{
-			info.hScr = SendDlgItemMessage(hDlg, SCR_HOR, SBM_GETPOS, 0, 0);
-			SetScrollPos(GetDlgItem(hDlg, SCR_HOR), SB_CTL, info.hScr, TRUE);
+			g_config.hScr = SendDlgItemMessage(hDlg, SCR_HOR, SBM_GETPOS, 0, 0);
+			SetScrollPos(GetDlgItem(hDlg, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
 			CreateFontMap();
 			return 0;
 		}
 
 		case SB_LINELEFT:
-			if (info.hScroll == FALSE)
+			if (g_config.hScroll == FALSE)
 			{
 				return 0;
 			}
-			info.hScr -= 8;
-			if (info.hScr < 0)
+			g_config.hScr -= 8;
+			if (g_config.hScr < 0)
 			{
-				info.hScr = 0;
+				g_config.hScr = 0;
 			}
-			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, info.hScr, TRUE);
+			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_LINERIGHT:
-			if (info.hScroll == FALSE)
+			if (g_config.hScroll == FALSE)
 			{
 				return 0;
 			}
-			info.hScr += 8;
+			g_config.hScr += 8;
 			scrInf.cbSize = sizeof(SCROLLINFO);
 			scrInf.fMask = SIF_RANGE;
 			GetScrollInfo(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, &scrInf);
-			if (info.hScr > scrInf.nMax)
+			if (g_config.hScr > scrInf.nMax)
 			{
-				info.hScr = scrInf.nMax;
+				g_config.hScr = scrInf.nMax;
 			}
-			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, info.hScr, TRUE);
+			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_PAGELEFT:
-			info.hScr -= 24;
-			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, info.hScr, TRUE);
+			g_config.hScr -= 24;
+			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_PAGERIGHT:
-			info.hScr += 24;
-			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, info.hScr, TRUE);
+			g_config.hScr += 24;
+			SetScrollPos(GetDlgItem(g_hMain, SCR_HOR), SB_CTL, g_config.hScr, TRUE);
 			CreateFontMap();
 			return 0;
 		}
@@ -495,50 +548,50 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case SB_THUMBTRACK:
 			SetScrollPos((HWND)lParam, SB_CTL, HIWORD(wParam), TRUE);
-			info.vScr = HIWORD(wParam);
+			g_config.vScr = HIWORD(wParam);
 			CreateFontMap();
 			return 0;
 
 		case SB_LINEUP:
-			if (info.vScroll == FALSE)
+			if (g_config.vScroll == FALSE)
 			{
 				return 0;
 			}
-			info.vScr -= 8;
-			if (info.vScr < 0)
+			g_config.vScr -= 8;
+			if (g_config.vScr < 0)
 			{
-				info.vScr = 0;
+				g_config.vScr = 0;
 			}
-			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, info.vScr, TRUE);
+			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, g_config.vScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_LINEDOWN:
-			if (info.vScroll == FALSE)
+			if (g_config.vScroll == FALSE)
 			{
 				return 0;
 			}
-			info.vScr += 8;
+			g_config.vScr += 8;
 			scrInf.cbSize = sizeof(SCROLLINFO);
 			scrInf.fMask = SIF_RANGE;
 			GetScrollInfo(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, &scrInf);
-			if (info.vScr > scrInf.nMax)
+			if (g_config.vScr > scrInf.nMax)
 			{
-				info.vScr = scrInf.nMax;
+				g_config.vScr = scrInf.nMax;
 			}
-			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, info.vScr, TRUE);
+			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, g_config.vScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_PAGEDOWN:
-			info.vScr += 24;
-			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, info.vScr, TRUE);
+			g_config.vScr += 24;
+			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, g_config.vScr, TRUE);
 			CreateFontMap();
 			return 0;
 
 		case SB_PAGEUP:
-			info.vScr -= 24;
-			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, info.vScr, TRUE);
+			g_config.vScr -= 24;
+			SetScrollPos(GetDlgItem(g_hMain, SCR_VERT), SB_CTL, g_config.vScr, TRUE);
 			CreateFontMap();
 			return 0;
 		}
@@ -556,53 +609,31 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			switch (Hdr->hdr.idFrom)
 			{
 			case SPN_CELLHEIGHT:
-				Fnt.SetSize(CELLHEIGHT, Hdr->iPos + Hdr->iDelta);
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
-				info.Select = LimitSelection(info.Select, info.MaxChars);
+				g_font.SetSize(CELLHEIGHT, Hdr->iPos + Hdr->iDelta);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CreateFontMap();
 				return 0;
 
 			case SPN_CELLWIDTH:
-				Fnt.SetSize(CELLWIDTH, Hdr->iPos + Hdr->iDelta);
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
-				info.Select = LimitSelection(info.Select, info.MaxChars);
+				g_font.SetSize(CELLWIDTH, Hdr->iPos + Hdr->iDelta);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CreateFontMap();
 				return 0;
 
 			case SPN_FONTHEIGHT:
-				Fnt.SetFontHeight(Hdr->iPos + Hdr->iDelta);
+				g_font.SetFontHeight(Hdr->iPos + Hdr->iDelta);
 				CreateFontMap();
 				return 0;
 
 			case SPN_FONTWIDTH:
-				Fnt.SetFontWidth(Hdr->iPos + Hdr->iDelta);
+				g_font.SetFontWidth(Hdr->iPos + Hdr->iDelta);
 				CreateFontMap();
-				return 0;
-
-			case SPN_WIDTH:
-				if (info.ModAll)
-				{
-					Fnt.SetGlobal(WIDTH, Hdr->iPos + Hdr->iDelta);
-					CreateFontMap();
-				}
-				else
-				{
-					Fnt.SetCharVal(info.Select + Fnt.GetBaseChar(), WOFFSET, Hdr->iPos + Hdr->iDelta);
-					wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), EWIDTH));
-					SendDlgItemMessage(g_hMain, TXT_WIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
 				return 0;
 
 			case SPN_START:
 				if (Hdr->iPos > 0)
 				{
-					Fnt.SetBaseChar(Hdr->iPos + Hdr->iDelta);
-				}
-
-				if (Fnt.GetBaseChar() + info.Select > 255)
-				{
-					info.Select = 255 - Fnt.GetBaseChar();
+					g_font.SetBaseChar(Hdr->iPos + Hdr->iDelta);
 				}
 
 				SendMessage(g_hMain, WM_APP + 1, 0, 0);
@@ -624,10 +655,10 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			cf.lStructSize = sizeof(cf);
 			cf.hwndOwner = g_hMain;
 			//cf.hDC = (HDC)NULL;
-			cf.lpLogFont = Fnt.GetLogicalFont();
+			cf.lpLogFont = g_font.GetLogicalFont();
 			//cf.iPointSize = 0;
 			cf.Flags = CF_BOTH | CF_INITTOLOGFONTSTRUCT | CF_EFFECTS | CF_ENABLEHOOK;
-			cf.rgbColors = Fnt.GetColor();
+			cf.rgbColors = g_font.GetColor();
 			//cf.lCustData = 0L;
 			cf.lpfnHook = (LPCFHOOKPROC)Lpcfhookproc;
 			//cf.lpTemplateName = (LPSTR)NULL;
@@ -639,45 +670,43 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			if (ChooseFont(&cf))
 			{
-				//Fnt.SetFontName(Text);
+				//g_font.SetFontName(Text);
 				CreateFontMap();
 			}
 
 			return TRUE;
 
 		case ID_COLOUR_SETTEXTCOLOUR:
-		case ODR_FORECOL:
 			SelCol.lStructSize = sizeof(CHOOSECOLOR);
 			SelCol.hwndOwner = hDlg;
-			SelCol.rgbResult = Fnt.GetColor();
+			SelCol.rgbResult = g_font.GetColor();
 			SelCol.lpCustColors = (LPDWORD)CustCol;
 			SelCol.Flags = CC_FULLOPEN | CC_RGBINIT | CC_ANYCOLOR;
 			if (ChooseColor(&SelCol))
 			{
-				Fnt.SetColor(SelCol.rgbResult);
+				g_font.SetColor(SelCol.rgbResult);
 			}
 
 			InvalidateRgn(hDlg, NULL, NULL);
 			return TRUE;
 
 		case ID_COLOUR_SETBACKGROUNDCOLOUR:
-		case ODR_BACKCOL:
 			SelCol.lStructSize = sizeof(CHOOSECOLOR);
 			SelCol.hwndOwner = hDlg;
-			SelCol.rgbResult = Fnt.GetCol(BACKCOL);
+			SelCol.rgbResult = g_font.GetCol(BACKCOL);
 			SelCol.lpCustColors = (LPDWORD)CustCol;
 			SelCol.Flags = CC_FULLOPEN | CC_RGBINIT | CC_ANYCOLOR;
 			if (ChooseColor(&SelCol))
 			{
-				Fnt.SetCol(BACKCOL, SelCol.rgbResult);
+				g_font.SetCol(BACKCOL, SelCol.rgbResult);
 			}
 
 			InvalidateRgn(hDlg, NULL, NULL);
 			return TRUE;
 
 		case ID_VIEW_SHOWGRID:
-			info.Grid ^= 1;
-			if (info.Grid)
+			g_config.Grid ^= 1;
+			if (g_config.Grid)
 			{
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 			}
@@ -689,8 +718,8 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case ID_VIEW_WIDTHMARKERS:
-			info.wMarker ^= 1;
-			if (info.wMarker)
+			g_config.wMarker ^= 1;
+			if (g_config.wMarker)
 			{
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 			}
@@ -701,92 +730,9 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			CreateFontMap();
 			return TRUE;
 
-		case CMD_LEFT:
-			if (info.ModAll)
-			{
-				tVal = Fnt.GetGlobal(HOFFSET);
-				Fnt.SetGlobal(HOFFSET, tVal - 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			else
-			{
-				tVal = Fnt.GetCharVal(Fnt.GetBaseChar() + info.Select, HOFFSET);
-				Fnt.SetCharVal(Fnt.GetBaseChar() + info.Select, HOFFSET, tVal - 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case CMD_RIGHT:
-			if (info.ModAll)
-			{
-				tVal = Fnt.GetGlobal(HOFFSET);
-				Fnt.SetGlobal(HOFFSET, tVal + 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			else
-			{
-				tVal = Fnt.GetCharVal(Fnt.GetBaseChar() + info.Select, HOFFSET);
-				Fnt.SetCharVal(Fnt.GetBaseChar() + info.Select, HOFFSET, tVal + 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case CMD_UP:
-			if (info.ModAll)
-			{
-				tVal = Fnt.GetGlobal(VOFFSET);
-				Fnt.SetGlobal(VOFFSET, tVal - 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			else
-			{
-				tVal = Fnt.GetCharVal(Fnt.GetBaseChar() + info.Select, VOFFSET);
-				Fnt.SetCharVal(Fnt.GetBaseChar() + info.Select, VOFFSET, tVal - 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case CMD_DOWN:
-			if (info.ModAll)
-			{
-				tVal = Fnt.GetGlobal(VOFFSET);
-				Fnt.SetGlobal(VOFFSET, tVal + 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			else
-			{
-				tVal = Fnt.GetCharVal(Fnt.GetBaseChar() + info.Select, VOFFSET);
-				Fnt.SetCharVal(Fnt.GetBaseChar() + info.Select, VOFFSET, tVal + 1);
-				SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			}
-			CreateFontMap();
-			return TRUE;
-
-		case RAD_ALL:
-			info.ModAll = TRUE;
-			EnableWindow(GetDlgItem(g_hMain, TXT_WIDTH), FALSE);
-			EnableWindow(GetDlgItem(g_hMain, STA_WIDTH), FALSE);
-			SendDlgItemMessage(g_hMain, RAD_SEL, WM_SETTEXT, 0, (LPARAM)"Adjust Selection Only");
-			SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			CreateFontMap();
-			return TRUE;
-
-		case RAD_SEL:
-			info.ModAll = FALSE;
-			SendMessage(g_hMain, WM_APP + 1, 0, 0);
-			EnableWindow(GetDlgItem(g_hMain, TXT_WIDTH), TRUE);
-			EnableWindow(GetDlgItem(g_hMain, STA_WIDTH), TRUE);
-			wsprintf(Text, "Adjust Selection (%d) Only", info.Select + Fnt.GetBaseChar());
-			SendDlgItemMessage(g_hMain, RAD_SEL, WM_SETTEXT, 0, (LPARAM)Text);
-			CreateFontMap();
-			return TRUE;
-
 		case ID_FILE_RESET:
-			Flags = Fnt.LoadConfig("bfg.cfg");
-			tVal = Fnt.GetSize(MAPWIDTH);
+			Flags = 0;
+			tVal = g_font.GetSize(MAPWIDTH);
 			if (tVal == 32)
 			{
 				SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_SETCURSEL, 1, 0);
@@ -824,7 +770,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_SETCURSEL, 0, 0);
 			}
 
-			tVal = Fnt.GetSize(MAPHEIGHT);
+			tVal = g_font.GetSize(MAPHEIGHT);
 			if (tVal == 32)
 			{
 				SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_SETCURSEL, 1, 0);
@@ -862,122 +808,84 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_SETCURSEL, 0, 0);
 			}
 
-			wsprintf(Text, "%d", Fnt.GetSize(CELLHEIGHT));
+			wsprintf(Text, "%d", g_font.GetSize(CELLHEIGHT));
 			SendDlgItemMessage(g_hMain, TXT_CELLHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
 
-			wsprintf(Text, "%d", Fnt.GetSize(CELLWIDTH));
+			wsprintf(Text, "%d", g_font.GetSize(CELLWIDTH));
 			SendDlgItemMessage(g_hMain, TXT_CELLWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
 
-			info.MaxChars = Fnt.GetSize(MAXCHARS);
+			g_config.MaxChars = g_font.GetSize(MAXCHARS);
 
-			info.hScr = 0;
-			info.vScr = 0;
-			info.Zoom = 1.0f;
+			g_config.hScr = 0;
+			g_config.vScr = 0;
+			g_config.Zoom = 1.0f;
 
 			if (Flags & SHOW_GRID)
 			{
-				info.Grid = true;
+				g_config.Grid = true;
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_CHECKED);
 			}
 			else
 			{
-				info.Grid = false;
+				g_config.Grid = false;
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_SHOWGRID, MF_UNCHECKED);
 			}
 
 			if (Flags & SHOW_WIDTH)
 			{
-				info.wMarker = true;
+				g_config.wMarker = true;
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_CHECKED);
 			}
 			else
 			{
-				info.wMarker = false;
+				g_config.wMarker = false;
 				CheckMenuItem(GetMenu(g_hMain), ID_VIEW_WIDTHMARKERS, MF_UNCHECKED);
 			}
 
-			Fnt.SetBaseChar(32);
+			g_font.SetBaseChar(32);
 			wsprintf(Text, "%d", 32);
 			SendDlgItemMessage(g_hMain, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
 
-			wsprintf(Text, "%d", Fnt.GetFontHeight());
+			wsprintf(Text, "%d", g_font.GetFontHeight());
 			SendDlgItemMessage(g_hMain, TXT_FONTHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
 
-			wsprintf(Text, "%d", Fnt.GetFontWidth());
+			wsprintf(Text, "%d", g_font.GetFontWidth());
 			SendDlgItemMessage(g_hMain, TXT_FONTWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
 
-			Fnt.SetFontQuality(NONANTIALIASED_QUALITY);
-			SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 0, 0);
+			g_font.SetFontQuality(NONANTIALIASED_QUALITY);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_CHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_UNCHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_UNCHECKED);
 
-			Fnt.ResetOffsets();
-			info.ModAll = TRUE;
-			info.Select = 0;
-			SendDlgItemMessage(g_hMain, RAD_ALL, BM_SETCHECK, BST_CHECKED, 0);
-			SendDlgItemMessage(g_hMain, RAD_SEL, BM_SETCHECK, BST_UNCHECKED, 0);
-			SendDlgItemMessage(g_hMain, RAD_SEL, WM_SETTEXT, 0, (LPARAM)"Adjust Selection Only");
-			EnableWindow(GetDlgItem(g_hMain, TXT_WIDTH), FALSE);
 			EnableWindow(GetDlgItem(g_hMain, STA_WIDTH), FALSE);
 			SendMessage(g_hMain, WM_APP + 1, 0, 0);
 
 			CreateFontMap();
 			return TRUE;
 
-		case ID_EXPORT_BITMAP:
-			lstrcpy(Text, "ExportedFont.bmp");
-			if (GetTargetName(Text, "Export BMP", "Bitmap Images (BMP)\0*.bmp\0All Files\0*.*\0\0", "bmp"))
-			{
-				if (Fnt.ExportMap(Text, EXPORT_BMP) != SBM_OK)
-				{
-					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-				}
-			}
-			return TRUE;
+		case ID_FILE_EXPORT40051:
+			lstrcpy(Text, "ExportedFont");
 
-		case ID_EXPORT_TARGA:
-			lstrcpy(Text, "ExportedFont.tga");
-			if (GetTargetName(Text, "Export TGA", "Targa Images (TGA)\0*.tga\0All Files\0*.*\0\0", "tga"))
+			OPENFILENAME ofn;
+			memset(&ofn, 0, sizeof(ofn));
+			ofn.lStructSize = sizeof(OPENFILENAME);
+			ofn.hwndOwner = g_hMain;
+			ofn.hInstance = g_hInstance;
+			ofn.lpstrFilter = "Bitmap Images (BMP)\0*.bmp\0Targa Images (TGA)\0*.tga\0Portable Network Graphics Images (PNG)\0*.png\0Comma Separated Values (CSV)\0*.csv\0\0";
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFile = Text;
+			ofn.nMaxFile = 255;
+			ofn.lpstrTitle = "Export Font";
+			ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_NONETWORKBUTTON;
+			ofn.lpstrDefExt = "bmp";
+			if (GetSaveFileName(&ofn))
 			{
-				if (Fnt.ExportMap(Text, EXPORT_TGA) != SBM_OK)
+				if (!g_font.Export(ofn.lpstrFile, ofn.nFilterIndex))
 				{
-					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
+					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONERROR);
 				}
 			}
-			return TRUE;
 
-		case ID_EXPORT_TARGA32:
-			lstrcpy(Text, "ExportedFont.tga");
-			if (GetTargetName(Text, "Export TGA", "Targa Images (TGA)\0*.tga\0All Files\0*.*\0\0", "tga"))
-			{
-				if (Fnt.ExportMap(Text, EXPORT_TGA32) != SBM_OK)
-				{
-					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-				}
-			}
-			return TRUE;
-
-		case ID_EXPORT_PORTABLENETWORKGRAPHICS:
-			lstrcpy(Text, "ExportedFont.png");
-			if (GetTargetName(Text, "Export PNG", "Portable Network Graphics Images (PNG)\0*.png\0All Files\0*.*\0\0", "png"))
-			{
-				if (Fnt.ExportMap(Text, EXPORT_PNG) != SBM_OK)
-				{
-					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-				}
-			}
-			return TRUE;
-
-		case ID_EXPORT_FONTDATA:
-			lstrcpy(Text, "FontData.csv");
-			if (GetTargetName(Text, "Export Font Data", "Comma Separated Values (CSV)\0*.csv\0All Files\0*.*\0\0", "csv"))
-			{
-				if (!Fnt.SaveFont(SAVE_CSV, Text))
-				{
-					MessageBox(hDlg, "Export Failed", "Error", MB_OK | MB_ICONEXCLAMATION);
-				}
-			}
 			return TRUE;
 
 		case ID_FILE_EXIT:
@@ -986,47 +894,44 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			return TRUE;
 
 		case ID_VIEW_ZOOMIN:
-			if (info.Zoom < 4.0f)
+			if (g_config.Zoom < 4.0f)
 			{
-				info.Zoom *= 2;
+				g_config.Zoom *= 2;
 				CalcScroll();
 				CreateFontMap();
 			}
 			return TRUE;
 
 		case ID_VIEW_ZOOMOUT:
-			if (info.Zoom > 0.5f)
+			if (g_config.Zoom > 0.5f)
 			{
-				info.Zoom /= 2;
+				g_config.Zoom /= 2;
 				CalcScroll();
 				CreateFontMap();
 			}
 			return TRUE;
 
 		case ID_ANTIALIAS_NONE:
-			SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 0, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_CHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_UNCHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_UNCHECKED);
-			Fnt.SetFontQuality(NONANTIALIASED_QUALITY);
+			g_font.SetFontQuality(NONANTIALIASED_QUALITY);
 			CreateFontMap();
 			return TRUE;
 
 		case ID_ANTIALIAS_NORMAL:
-			SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 1, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_UNCHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_CHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_UNCHECKED);
-			Fnt.SetFontQuality(ANTIALIASED_QUALITY);
+			g_font.SetFontQuality(ANTIALIASED_QUALITY);
 			CreateFontMap();
 			return TRUE;
 
 		case ID_ANTIALIAS_CLEARTYPE:
-			SendDlgItemMessage(hDlg, CBO_ALIAS, CB_SETCURSEL, 2, 0);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_UNCHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_UNCHECKED);
 			CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_CHECKED);
-			Fnt.SetFontQuality(5); // CLEARTYPE_QUALITY;
+			g_font.SetFontQuality(5); // CLEARTYPE_QUALITY;
 			CreateFontMap();
 			return TRUE;
 
@@ -1036,8 +941,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case ID_TOOLS_CONFIGURATION:
 			DialogBox(g_hInstance, MAKEINTRESOURCE(DLG_CONFIG), hDlg, ConfigWinProc);
-			info.MaxChars = Fnt.GetSize(MAXCHARS);
-			info.Select = LimitSelection(info.Select, info.MaxChars);
+			g_config.MaxChars = g_font.GetSize(MAXCHARS);
 			SendMessage(g_hMain, WM_APP + 1, 0, 0);
 			InvalidateRgn(hDlg, NULL, NULL);
 			CreateFontMap();
@@ -1056,25 +960,25 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 			case TXT_CELLWIDTH:
 				SendDlgItemMessage(hDlg, TXT_CELLWIDTH, WM_GETTEXT, 256, (LPARAM)Text);
-				tVal = Fnt.SetSize(CELLWIDTH, atoi(Text));
+				tVal = g_font.SetSize(CELLWIDTH, atoi(Text));
 				wsprintf(Text, "%d", tVal);
 				SendDlgItemMessage(hDlg, TXT_CELLWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CreateFontMap();
 				return TRUE;
 
 			case TXT_CELLHEIGHT:
 				SendDlgItemMessage(hDlg, TXT_CELLHEIGHT, WM_GETTEXT, 256, (LPARAM)Text);
-				tVal = Fnt.SetSize(CELLHEIGHT, atoi(Text));
+				tVal = g_font.SetSize(CELLHEIGHT, atoi(Text));
 				wsprintf(Text, "%d", tVal);
 				SendDlgItemMessage(hDlg, TXT_CELLHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CreateFontMap();
 				return TRUE;
 
 			case TXT_FONTWIDTH:
 				SendDlgItemMessage(hDlg, TXT_FONTWIDTH, WM_GETTEXT, 256, (LPARAM)Text);
-				tVal = Fnt.SetFontWidth(atoi(Text));
+				tVal = g_font.SetFontWidth(atoi(Text));
 				wsprintf(Text, "%d", tVal);
 				SendDlgItemMessage(hDlg, TXT_FONTWIDTH, WM_SETTEXT, 0, (LPARAM)Text);
 				CreateFontMap();
@@ -1082,7 +986,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case TXT_FONTHEIGHT:
 				SendDlgItemMessage(hDlg, TXT_FONTHEIGHT, WM_GETTEXT, 256, (LPARAM)Text);
-				tVal = Fnt.SetFontHeight(atoi(Text));
+				tVal = g_font.SetFontHeight(atoi(Text));
 				wsprintf(Text, "%d", tVal);
 				SendDlgItemMessage(hDlg, TXT_FONTHEIGHT, WM_SETTEXT, 0, (LPARAM)Text);
 				CreateFontMap();
@@ -1090,74 +994,10 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 			case TXT_START:
 				SendDlgItemMessage(hDlg, TXT_START, WM_GETTEXT, 256, (LPARAM)Text);
-				tVal = Fnt.SetBaseChar(atoi(Text));
+				tVal = g_font.SetBaseChar(atoi(Text));
 				wsprintf(Text, "%d", tVal);
 				SendDlgItemMessage(hDlg, TXT_START, WM_SETTEXT, 0, (LPARAM)Text);
 				CreateFontMap();
-				return TRUE;
-
-			case TXT_XADJ:
-				if (info.ModAll)
-				{
-					SendDlgItemMessage(hDlg, TXT_XADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetGlobal(HOFFSET, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_XADJ, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
-				else
-				{
-					SendDlgItemMessage(hDlg, TXT_XADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetCharVal(info.Select + Fnt.GetBaseChar(), HOFFSET, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_XADJ, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
-
-			case TXT_YADJ:
-				if (info.ModAll)
-				{
-					SendDlgItemMessage(hDlg, TXT_YADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetGlobal(VOFFSET, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_YADJ, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
-				else
-				{
-					SendDlgItemMessage(hDlg, TXT_YADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetCharVal(info.Select + Fnt.GetBaseChar(), VOFFSET, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_YADJ, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
-
-			case TXT_WADJ:
-				if (info.ModAll)
-				{
-					SendDlgItemMessage(hDlg, TXT_WADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetGlobal(WIDTH, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_WADJ, WM_SETTEXT, 0, (LPARAM)Text);
-					CreateFontMap();
-				}
-				else
-				{
-					SendDlgItemMessage(hDlg, TXT_WADJ, WM_GETTEXT, 256, (LPARAM)Text);
-					tVal = Limit(atoi(Text));
-					tVal = Fnt.SetCharVal(info.Select + Fnt.GetBaseChar(), WOFFSET, tVal);
-					wsprintf(Text, "%d", tVal);
-					SendDlgItemMessage(hDlg, TXT_WADJ, WM_SETTEXT, 0, (LPARAM)Text);
-
-					CreateFontMap();
-					wsprintf(Text, "%d", Fnt.GetCharVal(info.Select + Fnt.GetBaseChar(), EWIDTH));
-					SendDlgItemMessage(g_hMain, TXT_WIDTH, WM_SETTEXT, 0, (LPARAM)Text);
-				}
 				return TRUE;
 			}
 			return FALSE;
@@ -1165,72 +1005,46 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 		case CBN_SELCHANGE:
 			switch (LOWORD(wParam))
 			{
-			case CBO_ALIAS:
-				RowDex = SendDlgItemMessage(hDlg, CBO_ALIAS, CB_GETCURSEL, 0, 0);
-				if (RowDex == 0)
-				{
-					Fnt.SetFontQuality(NONANTIALIASED_QUALITY);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_CHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_UNCHECKED);
-				}
-				else if (RowDex == 1)
-				{
-					Fnt.SetFontQuality(ANTIALIASED_QUALITY);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_CHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_UNCHECKED);
-				}
-				else if (RowDex == 2)
-				{
-					Fnt.SetFontQuality(5); //CLEARTYPE_QUALITY;
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NONE, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_NORMAL, MF_UNCHECKED);
-					CheckMenuItem(GetMenu(g_hMain), ID_ANTIALIAS_CLEARTYPE, MF_CHECKED);
-				}
-				CreateFontMap();
-				return TRUE;
-
 			case CBO_IMGXRES:
 				RowDex = SendDlgItemMessage(hDlg, CBO_IMGXRES, CB_GETCURSEL, 0, 0);
 				if (RowDex == 0)
 				{
-					Fnt.SetSize(MAPWIDTH, 16);
+					g_font.SetSize(MAPWIDTH, 16);
 				}
 				else if (RowDex == 1)
 				{
-					Fnt.SetSize(MAPWIDTH, 32);
+					g_font.SetSize(MAPWIDTH, 32);
 				}
 				else if (RowDex == 2)
 				{
-					Fnt.SetSize(MAPWIDTH, 64);
+					g_font.SetSize(MAPWIDTH, 64);
 				}
 				else if (RowDex == 3)
 				{
-					Fnt.SetSize(MAPWIDTH, 128);
+					g_font.SetSize(MAPWIDTH, 128);
 				}
 				else if (RowDex == 4)
 				{
-					Fnt.SetSize(MAPWIDTH, 256);
+					g_font.SetSize(MAPWIDTH, 256);
 				}
 				else if (RowDex == 5)
 				{
-					Fnt.SetSize(MAPWIDTH, 512);
+					g_font.SetSize(MAPWIDTH, 512);
 				}
 				else if (RowDex == 6)
 				{
-					Fnt.SetSize(MAPWIDTH, 1024);
+					g_font.SetSize(MAPWIDTH, 1024);
 				}
 				else if (RowDex == 7)
 				{
-					Fnt.SetSize(MAPWIDTH, 2048);
+					g_font.SetSize(MAPWIDTH, 2048);
 				}
 				else if (RowDex == 8)
 				{
-					Fnt.SetSize(MAPWIDTH, 4096);
+					g_font.SetSize(MAPWIDTH, 4096);
 				}
 
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CalcScroll();
 				CreateFontMap();
 				return TRUE;
@@ -1239,42 +1053,42 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 				RowDex = SendDlgItemMessage(hDlg, CBO_IMGYRES, CB_GETCURSEL, 0, 0);
 				if (RowDex == 0)
 				{
-					Fnt.SetSize(MAPHEIGHT, 16);
+					g_font.SetSize(MAPHEIGHT, 16);
 				}
 				else if (RowDex == 1)
 				{
-					Fnt.SetSize(MAPHEIGHT, 32);
+					g_font.SetSize(MAPHEIGHT, 32);
 				}
 				else if (RowDex == 2)
 				{
-					Fnt.SetSize(MAPHEIGHT, 64);
+					g_font.SetSize(MAPHEIGHT, 64);
 				}
 				else if (RowDex == 3)
 				{
-					Fnt.SetSize(MAPHEIGHT, 128);
+					g_font.SetSize(MAPHEIGHT, 128);
 				}
 				else if (RowDex == 4)
 				{
-					Fnt.SetSize(MAPHEIGHT, 256);
+					g_font.SetSize(MAPHEIGHT, 256);
 				}
 				else if (RowDex == 5)
 				{
-					Fnt.SetSize(MAPHEIGHT, 512);
+					g_font.SetSize(MAPHEIGHT, 512);
 				}
 				else if (RowDex == 6)
 				{
-					Fnt.SetSize(MAPHEIGHT, 1024);
+					g_font.SetSize(MAPHEIGHT, 1024);
 				}
 				else if (RowDex == 7)
 				{
-					Fnt.SetSize(MAPHEIGHT, 2048);
+					g_font.SetSize(MAPHEIGHT, 2048);
 				}
 				else if (RowDex == 8)
 				{
-					Fnt.SetSize(MAPHEIGHT, 4096);
+					g_font.SetSize(MAPHEIGHT, 4096);
 				}
 
-				info.MaxChars = Fnt.GetSize(MAXCHARS);
+				g_config.MaxChars = g_font.GetSize(MAXCHARS);
 				CalcScroll();
 				CreateFontMap();
 				return TRUE;
@@ -1286,9 +1100,7 @@ BOOL CALLBACK MainProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	default:
 		return 0;
 	}
-
 	}
-
 }
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -1297,42 +1109,18 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	UNREFERENCED_PARAMETER(nCmdShow);
 
-	MSG msg;
-	msg.wParam = 1;
-
 	g_hInstance = hInstance;
 
-	info.hScr = 0;
-	info.vScr = 0;
-	info.Zoom = 1.0f;
-	info.hScroll = FALSE;
-	info.vScroll = FALSE;
-	info.ModAll = TRUE;
-	info.Select = 0;
+	LoadConfig();
 
-	int Ret = Fnt.LoadConfig("bfg.cfg");
-	if (Ret == -1)
-	{
-		info.Grid = true;
-		info.wMarker = true;
-		Fnt.SaveConfig("bfg.cfg", true, true);
-	}
-	else
-	{
-		info.Grid = Ret & SHOW_GRID;
-		info.wMarker = Ret & SHOW_WIDTH;
-	}
+	MSG msg;
+	msg.wParam = 1;
 
 	g_hMain = CreateDialog(g_hInstance, MAKEINTRESOURCE(RES_DLG_MAIN), NULL, MainProc);
 	if (!g_hMain)
 	{
 		goto exit;
 	}
-
-	CreateWindow("STATIC", "TextWin", WS_POPUP, 0, 0, 100, 100, g_hMain, NULL, g_hInstance, NULL);
-	OldProc = GetWindowLong(GetDlgItem(g_hMain, IMG_TEXT), GWL_WNDPROC);
-	SetWindowLong(GetDlgItem(g_hMain, IMG_TEXT), GWL_WNDPROC, (LONG)TextWinProc);
-	SetClassLong(GetDlgItem(g_hMain, IMG_TEXT), GCL_HBRBACKGROUND, NULL);
 
 	g_hBackground = CreatePatternBrush(LoadBitmap(g_hInstance, MAKEINTRESOURCE(RES_BMP_BACKGROUND)));
 	if (g_hBackground == NULL)
@@ -1363,7 +1151,10 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 
 exit:
-	DeleteObject(g_hBackground);
+	if (g_hBackground != NULL)
+	{
+		DeleteObject(g_hBackground);
+	}
 
 	return msg.wParam;
 }

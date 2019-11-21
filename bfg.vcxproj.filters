@@ -19,13 +19,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bfg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="config.cpp">
@@ -40,12 +34,12 @@
     <ClCompile Include="saveopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bfg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -54,10 +48,10 @@
     <ClInclude Include="font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="defs.h">
+    <ClInclude Include="bfg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bfg.h">
+    <ClInclude Include="config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

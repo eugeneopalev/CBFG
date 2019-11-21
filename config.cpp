@@ -1,9 +1,10 @@
 #include "pch.h"
-#include "defs.h"
+#include "config.h"
 #include "font.h"
 #include "bfg.h"
-#include "utils.h"
 #include "resource.h"
+
+config_t g_config;
 
 void SetConfigRGB(HWND Win, COLORREF Cols)
 {
@@ -20,6 +21,27 @@ void SetConfigRGB(HWND Win, COLORREF Cols)
 	InvalidateRect(GetDlgItem(Win, ODR_COLOR), NULL, FALSE);
 }
 
+void LoadConfig(void)
+{
+	TCHAR szIniFilename[MAX_PATH + 1];
+
+	GetModuleFileName(NULL, szIniFilename, MAX_PATH + 1);
+	PathRenameExtension(szIniFilename, ".ini");
+
+	//GetPrivateProfileString(, , , , , szFileName);
+	//GetPrivateProfileInt(, , 0, szFileName);
+
+	g_config.hScr = 0;
+	g_config.vScr = 0;
+	g_config.Zoom = 1.0f;
+	g_config.hScroll = FALSE;
+	g_config.vScroll = FALSE;
+}
+
+void SaveConfig(void)
+{
+}
+
 BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	HDC dc;
@@ -27,32 +49,32 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 	HBRUSH hBr;
 	int Sel, Val, Red, Green, Blue;
 	char Text[256];
-	static AppConfig lCfg;
+	static config_t lCfg;
 
 	switch (msg)
 	{
 	case WM_INITDIALOG:
 		// Preserve Current Config
-		lCfg.CellHeight = Fnt.GetSize(CELLHEIGHT);
-		lCfg.CellWidth = Fnt.GetSize(CELLWIDTH);
-		lCfg.FontHeight = Fnt.GetFontHeight();
-		lCfg.FontWidth = Fnt.GetFontWidth();
-		lCfg.ImgWidth = Fnt.GetSize(MAPWIDTH);
-		lCfg.ImgHeight = Fnt.GetSize(MAPHEIGHT);
+		lCfg.CellHeight = g_font.GetSize(CELLHEIGHT);
+		lCfg.CellWidth = g_font.GetSize(CELLWIDTH);
+		lCfg.FontHeight = g_font.GetFontHeight();
+		lCfg.FontWidth = g_font.GetFontWidth();
+		lCfg.ImgWidth = g_font.GetSize(MAPWIDTH);
+		lCfg.ImgHeight = g_font.GetSize(MAPHEIGHT);
 		lCfg.Flags = 0;
-		if (info.Grid)
+		if (g_config.Grid)
 		{
 			lCfg.Flags |= SHOW_GRID;
 		}
-		if (info.wMarker)
+		if (g_config.wMarker)
 		{
 			lCfg.Flags |= SHOW_WIDTH;
 		}
-		lCfg.BackCol = Fnt.GetCol(BACKCOL);
-		lCfg.ForeCol = Fnt.GetColor();
-		lCfg.GridCol = Fnt.GetCol(GRIDCOL);
-		lCfg.WidthCol = Fnt.GetCol(WIDTHCOL);
-		lCfg.SelCol = Fnt.GetCol(SELCOL);
+		lCfg.BackCol = g_font.GetCol(BACKCOL);
+		lCfg.ForeCol = g_font.GetColor();
+		lCfg.GridCol = g_font.GetCol(GRIDCOL);
+		lCfg.WidthCol = g_font.GetCol(WIDTHCOL);
+		lCfg.SelCol = g_font.GetCol(SELCOL);
 
 		// Populate item combo
 		SendDlgItemMessage(hDlg, CBO_CFG_ITEM, CB_ADDSTRING, 0, (LPARAM)"Grid Lines");
@@ -691,44 +713,38 @@ BOOL CALLBACK ConfigWinProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case ID_OK:
 			// Set config
-			Fnt.SetSize(CELLHEIGHT, lCfg.CellHeight);
-			Fnt.SetSize(CELLWIDTH, lCfg.CellWidth);
-			Fnt.SetFontHeight(lCfg.FontHeight);
-			Fnt.SetFontWidth(lCfg.FontWidth);
-			Fnt.SetSize(MAPWIDTH, lCfg.ImgWidth);
-			Fnt.SetSize(MAPHEIGHT, lCfg.ImgHeight);
-			info.Grid = lCfg.Flags & SHOW_GRID;
-			info.wMarker = lCfg.Flags & SHOW_WIDTH;
-			Fnt.SetCol(BACKCOL, lCfg.BackCol);
-			Fnt.SetColor(lCfg.ForeCol);
-			Fnt.SetCol(GRIDCOL, lCfg.GridCol);
-			Fnt.SetCol(WIDTHCOL, lCfg.WidthCol);
-			Fnt.SetCol(SELCOL, lCfg.SelCol);
+			g_font.SetSize(CELLHEIGHT, lCfg.CellHeight);
+			g_font.SetSize(CELLWIDTH, lCfg.CellWidth);
+			g_font.SetFontHeight(lCfg.FontHeight);
+			g_font.SetFontWidth(lCfg.FontWidth);
+			g_font.SetSize(MAPWIDTH, lCfg.ImgWidth);
+			g_font.SetSize(MAPHEIGHT, lCfg.ImgHeight);
+			g_config.Grid = lCfg.Flags & SHOW_GRID;
+			g_config.wMarker = lCfg.Flags & SHOW_WIDTH;
+			g_font.SetCol(BACKCOL, lCfg.BackCol);
+			g_font.SetColor(lCfg.ForeCol);
+			g_font.SetCol(GRIDCOL, lCfg.GridCol);
+			g_font.SetCol(WIDTHCOL, lCfg.WidthCol);
+			g_font.SetCol(SELCOL, lCfg.SelCol);
 
 			EndDialog(hDlg, 0);
 			return 0;
 
 		case IDSAVE:
 			// Set config
-			Fnt.SetSize(CELLHEIGHT, lCfg.CellHeight);
-			Fnt.SetSize(CELLWIDTH, lCfg.CellWidth);
-			Fnt.SetFontHeight(lCfg.FontHeight);
-			Fnt.SetFontWidth(lCfg.FontWidth);
-			Fnt.SetSize(MAPWIDTH, lCfg.ImgWidth);
-			Fnt.SetSize(MAPHEIGHT, lCfg.ImgHeight);
-			info.Grid = lCfg.Flags & SHOW_GRID;
-			info.wMarker = lCfg.Flags & SHOW_WIDTH;
-			Fnt.SetCol(BACKCOL, lCfg.BackCol);
-			Fnt.SetColor(lCfg.ForeCol);
-			Fnt.SetCol(GRIDCOL, lCfg.GridCol);
-			Fnt.SetCol(WIDTHCOL, lCfg.WidthCol);
-			Fnt.SetCol(SELCOL, lCfg.SelCol);
-
-			if (!Fnt.SaveConfig("bfg.cfg", info.Grid, info.wMarker))
-			{
-				MessageBox(hDlg, "Unable to save config file", "File Error", MB_OK | MB_ICONERROR);
-				return 0;
-			}
+			g_font.SetSize(CELLHEIGHT, lCfg.CellHeight);
+			g_font.SetSize(CELLWIDTH, lCfg.CellWidth);
+			g_font.SetFontHeight(lCfg.FontHeight);
+			g_font.SetFontWidth(lCfg.FontWidth);
+			g_font.SetSize(MAPWIDTH, lCfg.ImgWidth);
+			g_font.SetSize(MAPHEIGHT, lCfg.ImgHeight);
+			g_config.Grid = lCfg.Flags & SHOW_GRID;
+			g_config.wMarker = lCfg.Flags & SHOW_WIDTH;
+			g_font.SetCol(BACKCOL, lCfg.BackCol);
+			g_font.SetColor(lCfg.ForeCol);
+			g_font.SetCol(GRIDCOL, lCfg.GridCol);
+			g_font.SetCol(WIDTHCOL, lCfg.WidthCol);
+			g_font.SetCol(SELCOL, lCfg.SelCol);
 
 			EndDialog(hDlg, 0);
 			return 0;
